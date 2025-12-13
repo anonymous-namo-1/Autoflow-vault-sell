@@ -68,7 +68,20 @@ export default function Products() {
   const categories = categoriesData || [];
 
   const { data: productsData, isLoading, isError } = useQuery<{ products: Product[]; total: number }>({
-    queryKey: ['/api/products', { sortBy, limit: 50 }],
+    queryKey: ['/api/products'],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        sortBy,
+        limit: '50',
+      });
+      const res = await fetch(`/api/products?${params.toString()}`, {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      return res.json();
+    },
   });
 
   const normalizedProducts = useMemo((): NormalizedProduct[] => {
