@@ -1,0 +1,287 @@
+import { motion } from "framer-motion";
+import { useLocation, Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ShoppingBag, 
+  Download, 
+  Heart, 
+  Clock,
+  ArrowRight,
+  Settings,
+  Package,
+  FileDown,
+  User
+} from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
+import { useWishlistStore } from "@/stores/wishlistStore";
+import { 
+  Sidebar, 
+  SidebarContent, 
+  SidebarGroup, 
+  SidebarGroupContent, 
+  SidebarGroupLabel, 
+  SidebarMenu, 
+  SidebarMenuButton, 
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger
+} from "@/components/ui/sidebar";
+import { staggerContainer, staggerItem } from "@/lib/animations";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+
+const sidebarItems = [
+  { title: "Overview", url: "/dashboard", icon: Package },
+  { title: "Purchase History", url: "/dashboard/purchases", icon: ShoppingBag },
+  { title: "Downloads", url: "/dashboard/downloads", icon: FileDown },
+  { title: "Wishlist", url: "/dashboard/wishlist", icon: Heart },
+  { title: "Profile", url: "/dashboard/profile", icon: User },
+];
+
+function DashboardSidebar() {
+  const [location] = useLocation();
+
+  return (
+    <Sidebar>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {sidebarItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={location === item.url}
+                    data-testid={`nav-${item.title.toLowerCase().replace(' ', '-')}`}
+                  >
+                    <Link href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  );
+}
+
+function StatCard({ 
+  title, 
+  value, 
+  icon: Icon, 
+  index 
+}: { 
+  title: string; 
+  value: string | number; 
+  icon: typeof ShoppingBag; 
+  index: number;
+}) {
+  return (
+    <motion.div
+      variants={staggerItem}
+      transition={{ delay: index * 0.1 }}
+    >
+      <Card data-testid={`stat-card-${title.toLowerCase().replace(' ', '-')}`}>
+        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            {title}
+          </CardTitle>
+          <Icon className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold" data-testid={`stat-value-${title.toLowerCase().replace(' ', '-')}`}>
+            {value}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+function RecentOrderRow({ 
+  order 
+}: { 
+  order: { id: string; orderNumber: string; date: string; total: string; status: string; items: number };
+}) {
+  const statusColors: Record<string, string> = {
+    paid: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+    pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100",
+    failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
+    refunded: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
+  };
+
+  return (
+    <div 
+      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b last:border-b-0"
+      data-testid={`order-row-${order.id}`}
+    >
+      <div className="flex flex-col gap-1">
+        <span className="font-medium" data-testid={`order-number-${order.id}`}>
+          {order.orderNumber}
+        </span>
+        <span className="text-sm text-muted-foreground">{order.date}</span>
+      </div>
+      <div className="flex items-center gap-4">
+        <span className="text-sm text-muted-foreground">{order.items} item(s)</span>
+        <span className="font-medium" data-testid={`order-total-${order.id}`}>{order.total}</span>
+        <Badge 
+          className={statusColors[order.status] || ""} 
+          data-testid={`order-status-${order.id}`}
+        >
+          {order.status}
+        </Badge>
+        <Button size="sm" variant="outline" data-testid={`button-download-${order.id}`}>
+          <Download className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function DashboardContent() {
+  const { user } = useAuthStore();
+  const wishlistCount = useWishlistStore((state) => state.itemCount());
+
+  const stats = [
+    { title: "Total Purchases", value: 12, icon: ShoppingBag },
+    { title: "Templates Downloaded", value: 28, icon: Download },
+    { title: "Wishlist Items", value: wishlistCount, icon: Heart },
+    { title: "Active Downloads", value: 3, icon: Clock },
+  ];
+
+  const recentOrders = [
+    { id: "1", orderNumber: "ORD-2024-001", date: "Dec 10, 2024", total: "$149.00", status: "paid", items: 2 },
+    { id: "2", orderNumber: "ORD-2024-002", date: "Dec 8, 2024", total: "$79.00", status: "paid", items: 1 },
+    { id: "3", orderNumber: "ORD-2024-003", date: "Dec 5, 2024", total: "$199.00", status: "pending", items: 3 },
+  ];
+
+  return (
+    <div className="flex-1 p-6 overflow-auto">
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl font-bold mb-2" data-testid="text-welcome">
+            Welcome back, {user?.name || "User"}
+          </h1>
+          <p className="text-muted-foreground">
+            Manage your purchases, downloads, and account settings.
+          </p>
+        </motion.div>
+
+        <motion.div
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+        >
+          {stats.map((stat, index) => (
+            <StatCard key={stat.title} {...stat} index={index} />
+          ))}
+        </motion.div>
+
+        <div className="grid lg:grid-cols-3 gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="lg:col-span-2"
+          >
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-2">
+                <CardTitle>Recent Purchases</CardTitle>
+                <Button variant="ghost" size="sm" asChild data-testid="link-view-all-orders">
+                  <Link href="/dashboard/purchases">
+                    View All
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+              </CardHeader>
+              <CardContent className="p-0">
+                {recentOrders.length > 0 ? (
+                  <div data-testid="recent-orders-list">
+                    {recentOrders.map((order) => (
+                      <RecentOrderRow key={order.id} order={order} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-muted-foreground" data-testid="empty-orders">
+                    No purchases yet. Start browsing our templates!
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                <Button className="w-full justify-start" asChild data-testid="button-browse-templates">
+                  <Link href="/products">
+                    <ShoppingBag className="h-4 w-4 mr-2" />
+                    Browse Templates
+                  </Link>
+                </Button>
+                <Button variant="outline" className="w-full justify-start" asChild data-testid="button-view-wishlist">
+                  <Link href="/dashboard/wishlist">
+                    <Heart className="h-4 w-4 mr-2" />
+                    View Wishlist
+                  </Link>
+                </Button>
+                <Button variant="outline" className="w-full justify-start" asChild data-testid="button-account-settings">
+                  <Link href="/dashboard/profile">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Account Settings
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  const style = {
+    "--sidebar-width": "16rem",
+    "--sidebar-width-icon": "3rem",
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <SidebarProvider style={style as React.CSSProperties}>
+        <div className="flex flex-1 w-full">
+          <DashboardSidebar />
+          <div className="flex-1 flex flex-col">
+            <div className="flex items-center gap-2 p-4 border-b lg:hidden">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <span className="font-semibold">Dashboard</span>
+            </div>
+            <DashboardContent />
+          </div>
+        </div>
+      </SidebarProvider>
+      <Footer />
+    </div>
+  );
+}
