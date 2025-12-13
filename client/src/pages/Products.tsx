@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Grid, List, SlidersHorizontal, X, Star } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,109 +31,24 @@ import { ProductCard, ProductCardSkeleton } from '@/components/ProductCard';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { fadeInUp, staggerContainer } from '@/lib/animations';
+import type { Product, Category } from '@shared/schema';
 
-const MOCK_PRODUCTS = [
-  {
-    id: '1',
-    slug: 'email-automation-template',
-    name: 'Email Automation Template',
-    price: 29.99,
-    originalPrice: 49.99,
-    category: 'Email',
-    rating: 4.8,
-    reviewCount: 124,
-    tags: ['automation', 'email', 'marketing'],
-  },
-  {
-    id: '2',
-    slug: 'crm-integration-workflow',
-    name: 'CRM Integration Workflow',
-    price: 49.99,
-    category: 'CRM',
-    rating: 4.5,
-    reviewCount: 89,
-    tags: ['integration', 'crm', 'sales'],
-  },
-  {
-    id: '3',
-    slug: 'social-media-scheduler',
-    name: 'Social Media Scheduler',
-    price: 19.99,
-    originalPrice: 29.99,
-    category: 'Social',
-    rating: 4.9,
-    reviewCount: 256,
-    tags: ['social', 'scheduling', 'marketing'],
-  },
-  {
-    id: '4',
-    slug: 'invoice-generator-pro',
-    name: 'Invoice Generator Pro',
-    price: 39.99,
-    category: 'Finance',
-    rating: 4.7,
-    reviewCount: 178,
-    tags: ['invoice', 'finance', 'automation'],
-  },
-  {
-    id: '5',
-    slug: 'lead-capture-automation',
-    name: 'Lead Capture Automation',
-    price: 59.99,
-    originalPrice: 79.99,
-    category: 'Marketing',
-    rating: 4.6,
-    reviewCount: 145,
-    tags: ['leads', 'marketing', 'automation'],
-  },
-  {
-    id: '6',
-    slug: 'customer-support-bot',
-    name: 'Customer Support Bot',
-    price: 44.99,
-    category: 'Support',
-    rating: 4.4,
-    reviewCount: 92,
-    tags: ['chatbot', 'support', 'automation'],
-  },
-  {
-    id: '7',
-    slug: 'data-sync-pipeline',
-    name: 'Data Sync Pipeline',
-    price: 34.99,
-    originalPrice: 44.99,
-    category: 'Data',
-    rating: 4.8,
-    reviewCount: 67,
-    tags: ['data', 'sync', 'integration'],
-  },
-  {
-    id: '8',
-    slug: 'ecommerce-order-workflow',
-    name: 'E-commerce Order Workflow',
-    price: 54.99,
-    category: 'E-commerce',
-    rating: 4.9,
-    reviewCount: 203,
-    tags: ['ecommerce', 'orders', 'automation'],
-  },
-  {
-    id: '9',
-    slug: 'hr-onboarding-automation',
-    name: 'HR Onboarding Automation',
-    price: 64.99,
-    originalPrice: 89.99,
-    category: 'HR',
-    rating: 4.7,
-    reviewCount: 112,
-    tags: ['hr', 'onboarding', 'automation'],
-  },
-];
-
-const CATEGORIES = ['Email', 'CRM', 'Social', 'Finance', 'Marketing', 'Support', 'Data', 'E-commerce', 'HR'];
 const TAGS = ['automation', 'email', 'marketing', 'integration', 'crm', 'sales', 'social', 'data'];
 
-type SortOption = 'price-asc' | 'price-desc' | 'newest' | 'popular';
+type SortOption = 'price_asc' | 'price_desc' | 'newest' | 'popular';
+
+interface NormalizedProduct {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  categoryId: string | null;
+  categoryName: string;
+  rating: number;
+  reviewCount: number;
+  tags: string[];
+}
 
 export default function Products() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -142,29 +58,54 @@ export default function Products() {
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState<SortOption>('popular');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 9;
+
+  const { data: categoriesData } = useQuery<Category[]>({
+    queryKey: ['/api/products/categories/all'],
+  });
+
+  const categories = categoriesData || [];
+
+  const { data: productsData, isLoading, isError } = useQuery<{ products: Product[]; total: number }>({
+    queryKey: ['/api/products', { sortBy, limit: 50 }],
+  });
+
+  const normalizedProducts = useMemo((): NormalizedProduct[] => {
+    if (!productsData?.products) return [];
+    return productsData.products.map(p => ({
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      price: parseFloat(p.price),
+      originalPrice: p.originalPrice ? parseFloat(p.originalPrice) : undefined,
+      categoryId: p.categoryId,
+      categoryName: categories.find(c => c.id === p.categoryId)?.name || 'Uncategorized',
+      rating: parseFloat(p.rating || '0'),
+      reviewCount: p.reviewCount || 0,
+      tags: p.tags || [],
+    }));
+  }, [productsData?.products, categories]);
 
   const filteredProducts = useMemo(() => {
-    let filtered = [...MOCK_PRODUCTS];
+    let filtered = [...normalizedProducts];
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
-          p.category.toLowerCase().includes(query) ||
-          p.tags?.some((t) => t.toLowerCase().includes(query))
+          p.categoryName.toLowerCase().includes(query) ||
+          p.tags.some((t) => t.toLowerCase().includes(query))
       );
     }
 
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((p) => selectedCategories.includes(p.category));
+      filtered = filtered.filter((p) => selectedCategories.includes(p.categoryName));
     }
 
     if (selectedTags.length > 0) {
-      filtered = filtered.filter((p) => p.tags?.some((t) => selectedTags.includes(t)));
+      filtered = filtered.filter((p) => p.tags.some((t) => selectedTags.includes(t)));
     }
 
     filtered = filtered.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
@@ -174,14 +115,14 @@ export default function Products() {
     }
 
     switch (sortBy) {
-      case 'price-asc':
+      case 'price_asc':
         filtered.sort((a, b) => a.price - b.price);
         break;
-      case 'price-desc':
+      case 'price_desc':
         filtered.sort((a, b) => b.price - a.price);
         break;
       case 'newest':
-        filtered.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+        filtered.sort((a, b) => b.id.localeCompare(a.id));
         break;
       case 'popular':
         filtered.sort((a, b) => b.reviewCount - a.reviewCount);
@@ -189,7 +130,7 @@ export default function Products() {
     }
 
     return filtered;
-  }, [searchQuery, selectedCategories, selectedTags, priceRange, minRating, sortBy]);
+  }, [normalizedProducts, searchQuery, selectedCategories, selectedTags, priceRange, minRating, sortBy]);
 
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -235,17 +176,17 @@ export default function Products() {
           <AccordionTrigger data-testid="accordion-categories">Categories</AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
-              {CATEGORIES.map((category) => (
+              {categories.map((category) => (
                 <label
-                  key={category}
+                  key={category.id}
                   className="flex items-center gap-2 cursor-pointer"
                 >
                   <Checkbox
-                    checked={selectedCategories.includes(category)}
-                    onCheckedChange={() => toggleCategory(category)}
-                    data-testid={`checkbox-category-${category.toLowerCase()}`}
+                    checked={selectedCategories.includes(category.name)}
+                    onCheckedChange={() => toggleCategory(category.name)}
+                    data-testid={`checkbox-category-${category.slug}`}
                   />
-                  <span className="text-sm">{category}</span>
+                  <span className="text-sm">{category.name}</span>
                 </label>
               ))}
             </div>
@@ -417,8 +358,8 @@ export default function Products() {
                     <SelectContent>
                       <SelectItem value="popular">Popular</SelectItem>
                       <SelectItem value="newest">Newest</SelectItem>
-                      <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                      <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                      <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                      <SelectItem value="price_desc">Price: High to Low</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -466,6 +407,19 @@ export default function Products() {
                       <ProductCardSkeleton key={i} viewMode={viewMode} />
                     ))}
                   </motion.div>
+                ) : isError ? (
+                  <motion.div
+                    key="error"
+                    variants={fadeInUp}
+                    initial="initial"
+                    animate="animate"
+                    className="text-center py-16"
+                  >
+                    <p className="text-muted-foreground mb-4">Failed to load templates. Please try again.</p>
+                    <Button variant="outline" onClick={() => window.location.reload()} data-testid="button-retry">
+                      Retry
+                    </Button>
+                  </motion.div>
                 ) : paginatedProducts.length > 0 ? (
                   <motion.div
                     key="products"
@@ -479,7 +433,19 @@ export default function Products() {
                     }
                   >
                     {paginatedProducts.map((product) => (
-                      <ProductCard key={product.id} {...product} viewMode={viewMode} />
+                      <ProductCard
+                        key={product.id}
+                        id={product.id}
+                        slug={product.slug}
+                        name={product.name}
+                        price={product.price}
+                        originalPrice={product.originalPrice}
+                        category={product.categoryName}
+                        rating={product.rating}
+                        reviewCount={product.reviewCount}
+                        tags={product.tags}
+                        viewMode={viewMode}
+                      />
                     ))}
                   </motion.div>
                 ) : (
@@ -508,7 +474,7 @@ export default function Products() {
                   >
                     Previous
                   </Button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
                     <Button
                       key={page}
                       variant={currentPage === page ? 'default' : 'outline'}

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useAnimation, AnimatePresence } from "framer-motion";
+import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,9 +15,13 @@ import {
   RefreshCcw,
   Clock,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from "lucide-react";
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
+import { useCartStore } from "@/stores/cartStore";
+import { apiRequest } from "@/lib/queryClient";
+import type { Product } from "@shared/schema";
 
 function useCountUp(end: number, duration: number = 2000, startOnView: boolean = true) {
   const [count, setCount] = useState(0);
@@ -167,14 +173,16 @@ function HeroSection() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
           >
-            <Button 
-              size="lg" 
-              className="text-base px-8"
-              data-testid="button-browse-templates"
-            >
-              Browse Templates
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <Link href="/products">
+              <Button 
+                size="lg" 
+                className="text-base px-8"
+                data-testid="button-browse-templates"
+              >
+                Browse Templates
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
             <Button 
               variant="outline" 
               size="lg"
@@ -306,6 +314,7 @@ function FeaturedProductsSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const controls = useAnimation();
+  const { addItem, hasItem } = useCartStore();
 
   useEffect(() => {
     if (isInView) {
@@ -313,14 +322,19 @@ function FeaturedProductsSection() {
     }
   }, [isInView, controls]);
 
-  const products = [
-    { id: 1, name: "Email Automation Suite", price: 49 },
-    { id: 2, name: "CRM Integration Pack", price: 79 },
-    { id: 3, name: "Social Media Scheduler", price: 39 },
-    { id: 4, name: "Invoice Generator Pro", price: 59 },
-    { id: 5, name: "Analytics Dashboard", price: 89 },
-    { id: 6, name: "Task Workflow Bundle", price: 69 },
-  ];
+  const { data: products, isLoading } = useQuery<Product[]>({
+    queryKey: ['/api/products/featured'],
+  });
+
+  const handleAddToCart = (product: Product) => {
+    addItem({
+      id: `cart-${product.id}`,
+      productId: product.id,
+      name: product.name,
+      price: parseFloat(product.price),
+      originalPrice: product.originalPrice ? parseFloat(product.originalPrice) : undefined,
+    });
+  };
 
   return (
     <section 
@@ -349,62 +363,79 @@ function FeaturedProductsSection() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product, index) => (
-              <motion.div
-                key={product.id}
-                variants={staggerItem}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card 
-                  className="group overflow-visible hover-elevate transition-all duration-300"
-                  data-testid={`card-product-${product.id}`}
-                >
-                  <CardContent className="p-0">
-                    <div className="aspect-video bg-muted relative overflow-hidden rounded-t-xl">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Code className="w-12 h-12 text-muted-foreground/30" />
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <h3 
-                        className="font-semibold mb-1"
-                        data-testid={`text-product-name-${product.id}`}
-                      >
-                        {product.name}
-                      </h3>
-                      <p 
-                        className="text-lg font-bold mb-3"
-                        data-testid={`text-product-price-${product.id}`}
-                      >
-                        ${product.price}
-                      </p>
-                      <Button 
-                        className="w-full"
-                        data-testid={`button-add-to-cart-${product.id}`}
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Add to Cart
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(products || []).slice(0, 6).map((product, index) => {
+                const inCart = hasItem(product.id);
+                return (
+                  <motion.div
+                    key={product.id}
+                    variants={staggerItem}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card 
+                      className="group overflow-visible hover-elevate transition-all duration-300"
+                      data-testid={`card-product-${product.id}`}
+                    >
+                      <CardContent className="p-0">
+                        <Link href={`/products/${product.slug}`}>
+                          <div className="aspect-video bg-muted relative overflow-hidden rounded-t-xl cursor-pointer">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Code className="w-12 h-12 text-muted-foreground/30" />
+                            </div>
+                          </div>
+                        </Link>
+                        <div className="p-4">
+                          <Link href={`/products/${product.slug}`}>
+                            <h3 
+                              className="font-semibold mb-1 cursor-pointer hover:underline"
+                              data-testid={`text-product-name-${product.id}`}
+                            >
+                              {product.name}
+                            </h3>
+                          </Link>
+                          <p 
+                            className="text-lg font-bold mb-3"
+                            data-testid={`text-product-price-${product.id}`}
+                          >
+                            ${parseFloat(product.price).toFixed(2)}
+                          </p>
+                          <Button 
+                            className="w-full"
+                            disabled={inCart}
+                            onClick={() => handleAddToCart(product)}
+                            data-testid={`button-add-to-cart-${product.id}`}
+                          >
+                            <ShoppingCart className="w-4 h-4 mr-2" />
+                            {inCart ? 'In Cart' : 'Add to Cart'}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
 
           <motion.div 
             variants={fadeInUp}
             className="text-center mt-12"
           >
-            <Button 
-              variant="outline" 
-              size="lg"
-              data-testid="button-view-all-templates"
-            >
-              View All Templates
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <Link href="/products">
+              <Button 
+                variant="outline" 
+                size="lg"
+                data-testid="button-view-all-templates"
+              >
+                View All Templates
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
           </motion.div>
         </motion.div>
       </div>
@@ -605,10 +636,15 @@ function CTASection() {
     if (!email) return;
     
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    setEmail("");
+    try {
+      await apiRequest('POST', '/api/user/newsletter', { email });
+      setIsSubmitted(true);
+      setEmail("");
+    } catch (error) {
+      console.error('Newsletter subscription error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const trustBadges = [
@@ -706,11 +742,10 @@ function CTASection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-2 text-sm text-muted-foreground"
-                data-testid={`badge-${badge.label.toLowerCase().replace(' ', '-')}`}
+                className="flex items-center gap-2 text-muted-foreground"
               >
                 <badge.icon className="w-4 h-4" />
-                <span>{badge.label}</span>
+                <span className="text-sm">{badge.label}</span>
               </motion.div>
             ))}
           </motion.div>
@@ -720,15 +755,22 @@ function CTASection() {
   );
 }
 
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+
 export default function Home() {
   return (
-    <main className="min-h-screen" data-testid="page-home">
-      <HeroSection />
-      <FeaturesSection />
-      <FeaturedProductsSection />
-      <StatsSection />
-      <TestimonialsSection />
-      <CTASection />
-    </main>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1">
+        <HeroSection />
+        <FeaturesSection />
+        <FeaturedProductsSection />
+        <StatsSection />
+        <TestimonialsSection />
+        <CTASection />
+      </main>
+      <Footer />
+    </div>
   );
 }
