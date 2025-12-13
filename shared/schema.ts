@@ -61,6 +61,7 @@ export const products = pgTable("products", {
   features: text("features").array().default(sql`'{}'::text[]`),
   tags: text("tags").array().default(sql`'{}'::text[]`),
   templateFile: text("template_file"), // JSON file path in object storage
+  driveDownloadUrl: text("drive_download_url"),
   previewData: jsonb("preview_data"), // Sample JSON structure for preview
   downloadCount: integer("download_count").default(0),
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
@@ -212,13 +213,6 @@ export const downloadsRelations = relations(downloads, ({ one }) => ({
   }),
 }));
 
-// Newsletter subscribers
-export const newsletterSubscribers = pgTable("newsletter_subscribers", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: text("email").notNull().unique(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertOtpTokenSchema = createInsertSchema(otpTokens).omit({ id: true, createdAt: true });
@@ -230,7 +224,6 @@ export const insertCouponSchema = createInsertSchema(coupons).omit({ id: true, c
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true });
 export const insertOrderItemSchema = createInsertSchema(orderItems).omit({ id: true });
 export const insertDownloadSchema = createInsertSchema(downloads).omit({ id: true, createdAt: true });
-export const insertNewsletterSubscriberSchema = createInsertSchema(newsletterSubscribers).omit({ id: true, createdAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -253,18 +246,16 @@ export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
 export type Download = typeof downloads.$inferSelect;
 export type InsertDownload = z.infer<typeof insertDownloadSchema>;
-export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
-export type InsertNewsletterSubscriber = z.infer<typeof insertNewsletterSubscriberSchema>;
 
 // Auth validation schemas
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   name: z.string().min(2, "Name must be at least 2 characters"),
 });
 
@@ -275,7 +266,7 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
   code: z.string().length(6, "OTP must be 6 digits"),
-  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export const verifyOtpSchema = z.object({

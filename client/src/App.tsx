@@ -18,6 +18,10 @@ import PurchaseHistory from "@/pages/PurchaseHistory";
 import Downloads from "@/pages/Downloads";
 import Wishlist from "@/pages/Wishlist";
 import Profile from "@/pages/Profile";
+import Cart from "@/pages/Cart";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import Terms from "@/pages/Terms";
+import RefundPolicy from "@/pages/RefundPolicy";
 import { CartDrawer } from "@/components/CartDrawer";
 
 function AppRouter() {
@@ -29,9 +33,17 @@ function AppRouter() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/products" component={Products} />
+      <Route path="/templates" component={Products} />
       <Route path="/products/:slug" component={ProductDetail} />
       <Route path="/checkout" component={Checkout} />
+      <Route path="/cart" component={Cart} />
       <Route path="/order/:orderId" component={OrderConfirmation} />
+      <Route path="/orders" component={PurchaseHistory} />
+      <Route path="/settings" component={Profile} />
+      <Route path="/wishlist" component={Wishlist} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/refund-policy" component={RefundPolicy} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/dashboard/purchases" component={PurchaseHistory} />
       <Route path="/dashboard/downloads" component={Downloads} />

@@ -37,8 +37,6 @@ import { fadeIn, slideInRight, staggerContainer, staggerItem, badgePop } from '@
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/templates', label: 'Templates' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
 ];
 
 export default function Header() {

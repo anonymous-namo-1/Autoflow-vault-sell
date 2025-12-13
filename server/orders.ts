@@ -265,4 +265,107 @@ router.post("/validate-coupon", async (req, res) => {
   }
 });
 
+// Razorpay Webhook
+router.post("/webhook", async (req: any, res) => {
+  try {
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    
+    if (!webhookSecret) {
+      console.error("Webhook error: RAZORPAY_WEBHOOK_SECRET not configured");
+      return res.status(500).json({ message: "Webhook secret not configured" });
+    }
+
+    const signature = req.headers["x-razorpay-signature"] as string;
+    
+    if (!signature) {
+      console.error("Webhook error: Missing x-razorpay-signature header");
+      return res.status(400).json({ message: "Missing signature header" });
+    }
+
+    const rawBody = req.rawBody;
+    
+    if (!rawBody) {
+      console.error("Webhook error: Raw body not available");
+      return res.status(400).json({ message: "Raw body not available" });
+    }
+
+    const expectedSignature = crypto
+      .createHmac("sha256", webhookSecret)
+      .update(rawBody)
+      .digest("hex");
+
+    if (expectedSignature !== signature) {
+      console.error("Webhook error: Invalid signature");
+      return res.status(400).json({ message: "Invalid signature" });
+    }
+
+    const event = req.body;
+    console.log(`Webhook received: ${event.event}`);
+
+    if (event.event === "payment.captured") {
+      const payment = event.payload?.payment?.entity;
+      
+      if (!payment) {
+        console.error("Webhook error: Payment entity not found in payload");
+        return res.status(400).json({ message: "Invalid payload structure" });
+      }
+
+      const razorpayOrderId = payment.order_id;
+      
+      if (!razorpayOrderId) {
+        console.error("Webhook error: order_id not found in payment");
+        return res.status(400).json({ message: "Order ID not found in payment" });
+      }
+
+      const order = await storage.getOrderByRazorpayOrderId(razorpayOrderId);
+      
+      if (!order) {
+        console.error(`Webhook error: Order not found for razorpayOrderId: ${razorpayOrderId}`);
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Idempotency check: skip if already paid
+      if (order.status === "paid") {
+        console.log(`Webhook: Order ${order.id} already paid, skipping`);
+        return res.status(200).json({ message: "Order already processed" });
+      }
+
+      // Update order status to paid
+      await storage.updateOrder(order.id, {
+        status: "paid",
+        razorpayPaymentId: payment.id,
+        paidAt: new Date(),
+      });
+
+      // Create download links for each item
+      const orderItems = await storage.getOrderItems(order.id);
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+      for (const item of orderItems) {
+        await storage.createDownload({
+          userId: order.userId,
+          orderId: order.id,
+          productId: item.productId,
+          token: generateDownloadToken(),
+          maxDownloads: 5,
+          expiresAt,
+        });
+      }
+
+      // Clear user's cart
+      await storage.clearCart(order.userId);
+
+      console.log(`Webhook: Order ${order.id} marked as paid via webhook`);
+      return res.status(200).json({ message: "Payment processed successfully" });
+    }
+
+    // For other events, just acknowledge receipt
+    console.log(`Webhook: Unhandled event type: ${event.event}`);
+    return res.status(200).json({ message: "Event received" });
+  } catch (error) {
+    console.error("Webhook processing error:", error);
+    return res.status(500).json({ message: "Webhook processing failed" });
+  }
+});
+
 export default router;

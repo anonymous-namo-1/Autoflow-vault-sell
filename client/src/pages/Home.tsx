@@ -4,23 +4,17 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Download, 
   Code, 
   Star, 
   ShoppingCart,
-  Shield,
-  RefreshCcw,
-  Clock,
-  CheckCircle2,
   ArrowRight,
   Loader2
 } from "lucide-react";
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
 import { useCartStore } from "@/stores/cartStore";
-import { apiRequest } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
 
 function useCountUp(end: number, duration: number = 2000, startOnView: boolean = true) {
@@ -501,260 +495,6 @@ function StatItem({
   );
 }
 
-function TestimonialsSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const controls = useAnimation();
-
-  useEffect(() => {
-    if (isInView) {
-      controls.start("animate");
-    }
-  }, [isInView, controls]);
-
-  const testimonials = [
-    {
-      name: "Alex Johnson",
-      role: "Senior Developer",
-      content: "These templates saved me weeks of development time. The quality is outstanding and integration was seamless.",
-      rating: 5,
-    },
-    {
-      name: "Sarah Chen",
-      role: "Startup Founder",
-      content: "Finally, automation templates that just work. No more reinventing the wheel for every project.",
-      rating: 5,
-    },
-    {
-      name: "Michael Park",
-      role: "Tech Lead",
-      content: "Our team productivity increased by 40% after implementing these templates. Highly recommended!",
-      rating: 5,
-    },
-  ];
-
-  return (
-    <section 
-      ref={ref}
-      className="py-24 bg-background"
-      data-testid="section-testimonials"
-    >
-      <div className="container mx-auto px-4 max-w-6xl">
-        <motion.div
-          initial="initial"
-          animate={controls}
-          variants={staggerContainer}
-        >
-          <motion.div 
-            variants={fadeInUp}
-            className="text-center mb-16"
-          >
-            <h2 
-              className="text-3xl md:text-4xl font-bold mb-4"
-              data-testid="text-testimonials-title"
-            >
-              What Developers Say
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Join thousands of satisfied developers using our templates
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.name}
-                variants={{
-                  initial: { opacity: 0, x: index === 0 ? -50 : index === 2 ? 50 : 0, y: index === 1 ? 50 : 0 },
-                  animate: { opacity: 1, x: 0, y: 0 },
-                }}
-                transition={{ delay: index * 0.15, duration: 0.5 }}
-              >
-                <Card 
-                  className="h-full"
-                  data-testid={`card-testimonial-${index}`}
-                >
-                  <CardContent className="p-6">
-                    <motion.div 
-                      className="flex gap-1 mb-4"
-                      initial="initial"
-                      whileInView="animate"
-                      viewport={{ once: true }}
-                    >
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.5 + i * 0.1 }}
-                        >
-                          <Star className="w-4 h-4 fill-foreground text-foreground" />
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                    <p className="text-muted-foreground mb-4 text-sm">
-                      "{testimonial.content}"
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarFallback className="bg-muted text-sm">
-                          {testimonial.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-semibold text-sm">{testimonial.name}</div>
-                        <div className="text-xs text-muted-foreground">{testimonial.role}</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-function CTASection() {
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const controls = useAnimation();
-
-  useEffect(() => {
-    if (isInView) {
-      controls.start("animate");
-    }
-  }, [isInView, controls]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    
-    setIsSubmitting(true);
-    try {
-      await apiRequest('POST', '/api/user/newsletter', { email });
-      setIsSubmitted(true);
-      setEmail("");
-    } catch (error) {
-      console.error('Newsletter subscription error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const trustBadges = [
-    { icon: Shield, label: "SSL Secure" },
-    { icon: RefreshCcw, label: "Money Back" },
-    { icon: Clock, label: "Instant Access" },
-    { icon: CheckCircle2, label: "Quality Guaranteed" },
-  ];
-
-  return (
-    <section 
-      ref={ref}
-      className="py-24 bg-muted/30"
-      data-testid="section-cta"
-    >
-      <div className="container mx-auto px-4 max-w-4xl">
-        <motion.div
-          initial="initial"
-          animate={controls}
-          variants={staggerContainer}
-          className="text-center"
-        >
-          <motion.h2 
-            variants={fadeInUp}
-            className="text-3xl md:text-4xl font-bold mb-4"
-            data-testid="text-cta-title"
-          >
-            Ready to Automate?
-          </motion.h2>
-          <motion.p 
-            variants={fadeInUp}
-            className="text-muted-foreground mb-8 max-w-xl mx-auto"
-          >
-            Subscribe to our newsletter and get exclusive discounts, early access to new templates, and automation tips.
-          </motion.p>
-
-          <motion.form 
-            variants={fadeInUp}
-            onSubmit={handleSubmit}
-            className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-12"
-          >
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1"
-              data-testid="input-newsletter-email"
-              disabled={isSubmitting}
-            />
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || isSubmitted}
-              data-testid="button-newsletter-submit"
-            >
-              <AnimatePresence mode="wait">
-                {isSubmitting ? (
-                  <motion.div
-                    key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin"
-                  />
-                ) : isSubmitted ? (
-                  <motion.span
-                    key="success"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="default"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    Subscribe
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </Button>
-          </motion.form>
-
-          <motion.div 
-            variants={fadeInUp}
-            className="flex flex-wrap justify-center gap-6"
-          >
-            {trustBadges.map((badge, index) => (
-              <motion.div
-                key={badge.label}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-2 text-muted-foreground"
-              >
-                <badge.icon className="w-4 h-4" />
-                <span className="text-sm">{badge.label}</span>
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -767,8 +507,6 @@ export default function Home() {
         <FeaturesSection />
         <FeaturedProductsSection />
         <StatsSection />
-        <TestimonialsSection />
-        <CTASection />
       </main>
       <Footer />
     </div>

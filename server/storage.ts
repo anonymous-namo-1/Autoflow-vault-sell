@@ -11,7 +11,6 @@ import {
   orders,
   orderItems,
   downloads,
-  newsletterSubscribers,
   type User,
   type InsertUser,
   type OtpToken,
@@ -32,8 +31,6 @@ import {
   type InsertOrderItem,
   type Download,
   type InsertDownload,
-  type NewsletterSubscriber,
-  type InsertNewsletterSubscriber,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -85,6 +82,7 @@ export interface IStorage {
   createOrder(order: InsertOrder): Promise<Order>;
   getOrderById(id: string): Promise<Order | undefined>;
   getOrderByOrderNumber(orderNumber: string): Promise<Order | undefined>;
+  getOrderByRazorpayOrderId(razorpayOrderId: string): Promise<Order | undefined>;
   getUserOrders(userId: string): Promise<Order[]>;
   updateOrder(id: string, updates: Partial<Order>): Promise<Order | undefined>;
 
@@ -97,10 +95,6 @@ export interface IStorage {
   getDownloadByToken(token: string): Promise<Download | undefined>;
   getUserDownloads(userId: string): Promise<(Download & { product: Product })[]>;
   incrementDownloadCount(downloadId: string): Promise<void>;
-
-  // Newsletter
-  subscribeToNewsletter(email: string): Promise<NewsletterSubscriber>;
-  isSubscribedToNewsletter(email: string): Promise<boolean>;
 }
 
 export interface ProductFilters {
@@ -470,6 +464,15 @@ export class DatabaseStorage implements IStorage {
     return order;
   }
 
+  async getOrderByRazorpayOrderId(razorpayOrderId: string): Promise<Order | undefined> {
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.razorpayOrderId, razorpayOrderId))
+      .limit(1);
+    return order;
+  }
+
   async getUserOrders(userId: string): Promise<Order[]> {
     return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt));
   }
@@ -518,34 +521,6 @@ export class DatabaseStorage implements IStorage {
       .update(downloads)
       .set({ downloadCount: sql`${downloads.downloadCount} + 1` })
       .where(eq(downloads.id, downloadId));
-  }
-
-  // Newsletter
-  async subscribeToNewsletter(email: string): Promise<NewsletterSubscriber> {
-    const existing = await this.isSubscribedToNewsletter(email);
-    if (existing) {
-      const [subscriber] = await db
-        .select()
-        .from(newsletterSubscribers)
-        .where(eq(newsletterSubscribers.email, email.toLowerCase()))
-        .limit(1);
-      return subscriber;
-    }
-
-    const [newSubscriber] = await db
-      .insert(newsletterSubscribers)
-      .values({ email: email.toLowerCase() })
-      .returning();
-    return newSubscriber;
-  }
-
-  async isSubscribedToNewsletter(email: string): Promise<boolean> {
-    const [subscriber] = await db
-      .select()
-      .from(newsletterSubscribers)
-      .where(eq(newsletterSubscribers.email, email.toLowerCase()))
-      .limit(1);
-    return !!subscriber;
   }
 }
 
