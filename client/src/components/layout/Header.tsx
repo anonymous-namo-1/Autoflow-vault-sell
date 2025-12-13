@@ -41,7 +41,7 @@ const navLinks = [
   { href: '/contact', label: 'Contact' },
 ];
 
-export function Header() {
+export default function Header() {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);

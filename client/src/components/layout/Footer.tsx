@@ -7,7 +7,7 @@ import {
   Phone,
   ArrowRight,
 } from 'lucide-react';
-import { SiTwitter, SiGithub, SiLinkedin, SiInstagram } from 'react-icons/si';
+import { SiX, SiGithub, SiLinkedin, SiInstagram } from 'react-icons/si';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { fadeInUp, staggerContainer, staggerItem } from '@/lib/animations';
@@ -27,13 +27,13 @@ const legalLinks = [
 ];
 
 const socialLinks = [
-  { href: 'https://twitter.com', icon: SiTwitter, label: 'Twitter' },
+  { href: 'https://x.com', icon: SiX, label: 'X' },
   { href: 'https://github.com', icon: SiGithub, label: 'GitHub' },
   { href: 'https://linkedin.com', icon: SiLinkedin, label: 'LinkedIn' },
   { href: 'https://instagram.com', icon: SiInstagram, label: 'Instagram' },
 ];
 
-export function Footer() {
+export default function Footer() {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
 

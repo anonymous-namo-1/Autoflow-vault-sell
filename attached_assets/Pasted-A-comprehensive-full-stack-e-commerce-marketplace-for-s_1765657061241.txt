@@ -1,0 +1,74 @@
+A comprehensive full-stack e-commerce marketplace for selling automation templates with email/password authentication and OTP password recovery
+I'll include the following features:
+
+User registration with email and password (with email verification)
+User login with email and password authentication
+Password recovery system using OTP sent to registered email
+Email verification for new account activation
+Product catalog page with grid/list view toggle, sorting options (price, popularity, newest), and pagination
+Advanced product filtering by category, price range, tags, and template type
+Individual product detail pages with full descriptions, screenshots, feature lists, and technical specifications
+Shopping cart with add/remove items, quantity management, price calculation, and persistent storage
+Wishlist/favorites functionality to save templates for later
+Razorpay payment integration with multiple payment methods (cards, UPI, wallets, net banking)
+Discount code and coupon system for promotional offers
+Order management system with order tracking, invoice generation, and order history
+Automated JSON template file delivery via secure download links after purchase
+User dashboard with purchase history, active downloads, saved templates, and account settings
+Template file management using Replit Object Storage with version control
+Email notifications for registration, OTP codes, order confirmation, and download links
+Search functionality with autocomplete and real-time results
+Product recommendation system showing related and popular templates
+Responsive mobile-first design with modern UI components and smooth animations
+User profile management with avatar upload and preference settings
+Transaction history and digital receipt storage
+Download tracking with expiration links for security
+Template bundle creation allowing multiple templates in one purchase
+
+Get notified when your app is ready
+
+Let's get started with without any products / templates just use place holders and after the first version of the website is ready I'll also provide you all the products and the product images that you can add to the products page also add more features to improve the website conversion rate also think of adding more and more animations in landing page background, , buttons, cards, and wherever it is required... Colour theme of the website should be black and white use white background I want a fully to developed menu header and footer as well website should be fully develop think of more and more features
+
+45 minutes ago
+Perfect! I'll create a comprehensive, fully-developed e-commerce platform with placeholder products and extensive animations to maximize conversion rates. Let me finalize the plan with all the conversion-optimizing features and animations you've requested.
+
+App type
+Modern web app
+Integrations
+PostgreSQL database
+App Storage
+A high-conversion e-commerce marketplace for automation templates with advanced animations, black & white theme, and comprehensive features
+I'll include the following features:
+
+User registration with email/password and email verification system
+User login with secure authentication and session management
+OTP-based password recovery sent via email with expiration
+Stunning animated landing page with hero section, animated background effects, and smooth scroll animations
+Animated product catalog with hover effects, fade-in animations, grid/list view toggle, and skeleton loaders
+Advanced filtering with animated dropdowns (category, price range, tags) and real-time search with autocomplete
+Individual product pages with image galleries, animated tabs, feature highlights, and smooth transitions
+Persistent shopping cart with slide-in animations, real-time updates, quantity controls, and price calculations
+Animated wishlist/favorites with heart icon animations and save functionality
+Razorpay payment integration with animated checkout flow and payment method selection
+Discount code system with validation animations and success/error states
+Order confirmation page with animated success checkmarks and confetti effects
+User dashboard with animated statistics cards, purchase history, and download management
+Automated template delivery system with secure expiring download links
+Professional header/menu with mega menu, search bar, cart icon with badge, and smooth dropdown animations
+Comprehensive footer with links, newsletter signup form, social media icons, and contact information
+Email notification system for verification, OTP, orders, and download links
+Black and white color theme with white background, black accents, and subtle gray tones
+Micro-interactions on all buttons with hover, click, and loading animations
+Scroll-triggered animations throughout the site (fade-in, slide-up, parallax effects)
+Animated product cards with image zoom, shadow effects, and 'Add to Cart' button transitions
+Loading states with skeleton screens and animated spinners
+Toast notifications with slide-in animations for user feedback
+Smooth page transitions using React Router
+Animated stats/testimonials section on landing page
+Trust badges and security indicators with pulse animations
+Sticky header with scroll-based show/hide animations
+Mobile-responsive hamburger menu with smooth slide animations
+Product recommendation carousel with auto-scroll and swipe gestures
+Animated countdown timers for limited-time offers
+Newsletter popup with entrance animation and exit intent
+User profile with avatar upload, animated form fields, and settings management
