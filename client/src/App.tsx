@@ -13,9 +13,14 @@ import Products from "@/pages/Products";
 import ProductDetail from "@/pages/ProductDetail";
 import Checkout from "@/pages/Checkout";
 import OrderConfirmation from "@/pages/OrderConfirmation";
+import Dashboard from "@/pages/Dashboard";
+import PurchaseHistory from "@/pages/PurchaseHistory";
+import Downloads from "@/pages/Downloads";
+import Wishlist from "@/pages/Wishlist";
+import Profile from "@/pages/Profile";
 import { CartDrawer } from "@/components/CartDrawer";
 
-function Router() {
+function AppRouter() {
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -27,6 +32,11 @@ function Router() {
       <Route path="/products/:slug" component={ProductDetail} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/order/:orderId" component={OrderConfirmation} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/dashboard/purchases" component={PurchaseHistory} />
+      <Route path="/dashboard/downloads" component={Downloads} />
+      <Route path="/dashboard/wishlist" component={Wishlist} />
+      <Route path="/dashboard/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -38,7 +48,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <CartDrawer />
-        <Router />
+        <AppRouter />
       </TooltipProvider>
     </QueryClientProvider>
   );
