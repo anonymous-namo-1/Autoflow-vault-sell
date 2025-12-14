@@ -282,11 +282,9 @@ export default function ForgotPassword() {
                                     className="pl-10 pr-10"
                                     data-testid="input-new-password"
                                   />
-                                  <Button
+                                  <button
                                     type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                                     onClick={() => setShowPassword(!showPassword)}
                                     data-testid="button-toggle-new-password"
                                   >
@@ -295,7 +293,7 @@ export default function ForgotPassword() {
                                     ) : (
                                       <Eye className="h-4 w-4" />
                                     )}
-                                  </Button>
+                                  </button>
                                 </div>
                               </FormControl>
                               <FormMessage />
@@ -321,11 +319,9 @@ export default function ForgotPassword() {
                                     className="pl-10 pr-10"
                                     data-testid="input-confirm-new-password"
                                   />
-                                  <Button
+                                  <button
                                     type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     data-testid="button-toggle-confirm-new-password"
                                   >
@@ -334,7 +330,7 @@ export default function ForgotPassword() {
                                     ) : (
                                       <Eye className="h-4 w-4" />
                                     )}
-                                  </Button>
+                                  </button>
                                 </div>
                               </FormControl>
                               <FormMessage />
