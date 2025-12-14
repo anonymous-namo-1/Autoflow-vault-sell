@@ -2,13 +2,11 @@ import { Link } from 'wouter';
 import { motion } from 'framer-motion';
 import {
   Mail,
-  MapPin,
-  Phone,
 } from 'lucide-react';
 import { fadeInUp, staggerContainer, staggerItem } from '@/lib/animations';
 
 const quickLinks = [
-  { href: '/templates', label: 'Browse Templates' },
+  { href: '/products', label: 'Browse Templates' },
 ];
 
 const legalLinks = [
@@ -37,14 +35,6 @@ export default function Footer() {
               Premium automation templates to supercharge your workflow. Save time, increase productivity, and scale your business.
             </p>
             <div className="space-y-2 text-sm text-background/70">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 shrink-0" />
-                <span>123 Automation Street, Tech City</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 shrink-0" />
-                <span>+1 (555) 123-4567</span>
-              </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 shrink-0" />
                 <span>hello@automatehub.com</span>
@@ -110,13 +100,13 @@ export default function Footer() {
               </span>
               <div className="flex items-center gap-2">
                 <div className="px-2 py-1 bg-background/10 rounded text-xs font-medium">
-                  Visa
+                  Razorpay
                 </div>
                 <div className="px-2 py-1 bg-background/10 rounded text-xs font-medium">
-                  Mastercard
+                  UPI
                 </div>
                 <div className="px-2 py-1 bg-background/10 rounded text-xs font-medium">
-                  PayPal
+                  Cards
                 </div>
               </div>
             </div>

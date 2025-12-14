@@ -15,6 +15,7 @@ import {
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
 import { useCartStore } from "@/stores/cartStore";
 import type { Product } from "@shared/schema";
+import ParticleBackground from "@/components/ParticleBackground";
 
 function FloatingShape({ 
   className, 
@@ -60,6 +61,13 @@ function HeroSection() {
       data-testid="section-hero"
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <ParticleBackground 
+          particleCount={60}
+          particleColor="hsl(var(--foreground))"
+          maxSpeed={0.4}
+          minSize={1}
+          maxSize={3}
+        />
         <FloatingShape 
           className="w-64 h-64 rounded-full border-2 border-foreground top-20 left-10" 
           delay={0}
