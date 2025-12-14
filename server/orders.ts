@@ -39,6 +39,9 @@ function requireAuth(req: any, res: any, next: any) {
 router.post("/create", requireAuth, async (req, res) => {
   try {
     const userId = req.session!.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
     const { items, couponCode } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -232,6 +235,9 @@ router.get("/:orderId", requireAuth, async (req, res) => {
 router.get("/", requireAuth, async (req, res) => {
   try {
     const userId = req.session!.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
     const orders = await storage.getUserOrders(userId);
 
     const ordersWithItems = await Promise.all(

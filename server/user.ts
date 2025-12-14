@@ -12,10 +12,15 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
+// Helper to get userId with type safety (requireAuth ensures it exists)
+function getUserId(req: any): string {
+  return req.session!.userId as string;
+}
+
 // Get user profile
 router.get("/profile", requireAuth, async (req, res) => {
   try {
-    const user = await storage.getUser(req.session!.userId);
+    const user = await storage.getUser(getUserId(req));
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -37,7 +42,7 @@ router.patch("/profile", requireAuth, async (req, res) => {
     if (name) updates.name = name;
     if (avatar !== undefined) updates.avatar = avatar;
 
-    const user = await storage.updateUser(req.session!.userId, updates);
+    const user = await storage.updateUser(getUserId(req), updates);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -53,7 +58,7 @@ router.patch("/profile", requireAuth, async (req, res) => {
 // Get cart items
 router.get("/cart", requireAuth, async (req, res) => {
   try {
-    const items = await storage.getCartItems(req.session!.userId);
+    const items = await storage.getCartItems(getUserId(req));
     res.json(items);
   } catch (error) {
     console.error("Get cart error:", error);
@@ -76,7 +81,7 @@ router.post("/cart", requireAuth, async (req, res) => {
     }
 
     const item = await storage.addToCart({
-      userId: req.session!.userId,
+      userId: getUserId(req),
       productId,
       quantity,
     });
@@ -121,7 +126,7 @@ router.delete("/cart/:itemId", requireAuth, async (req, res) => {
 // Clear cart
 router.delete("/cart", requireAuth, async (req, res) => {
   try {
-    await storage.clearCart(req.session!.userId);
+    await storage.clearCart(getUserId(req));
     res.json({ message: "Cart cleared" });
   } catch (error) {
     console.error("Clear cart error:", error);
@@ -132,7 +137,7 @@ router.delete("/cart", requireAuth, async (req, res) => {
 // Get wishlist items
 router.get("/wishlist", requireAuth, async (req, res) => {
   try {
-    const items = await storage.getWishlistItems(req.session!.userId);
+    const items = await storage.getWishlistItems(getUserId(req));
     res.json(items);
   } catch (error) {
     console.error("Get wishlist error:", error);
@@ -155,7 +160,7 @@ router.post("/wishlist", requireAuth, async (req, res) => {
     }
 
     const item = await storage.addToWishlist({
-      userId: req.session!.userId,
+      userId: getUserId(req),
       productId,
     });
 
@@ -169,7 +174,7 @@ router.post("/wishlist", requireAuth, async (req, res) => {
 // Remove from wishlist
 router.delete("/wishlist/:productId", requireAuth, async (req, res) => {
   try {
-    await storage.removeFromWishlist(req.session!.userId, req.params.productId);
+    await storage.removeFromWishlist(getUserId(req), req.params.productId);
     res.json({ message: "Item removed from wishlist" });
   } catch (error) {
     console.error("Remove from wishlist error:", error);
@@ -180,7 +185,7 @@ router.delete("/wishlist/:productId", requireAuth, async (req, res) => {
 // Check if product is in wishlist
 router.get("/wishlist/:productId", requireAuth, async (req, res) => {
   try {
-    const isInWishlist = await storage.isInWishlist(req.session!.userId, req.params.productId);
+    const isInWishlist = await storage.isInWishlist(getUserId(req), req.params.productId);
     res.json({ isInWishlist });
   } catch (error) {
     console.error("Check wishlist error:", error);
@@ -191,7 +196,7 @@ router.get("/wishlist/:productId", requireAuth, async (req, res) => {
 // Get user downloads
 router.get("/downloads", requireAuth, async (req, res) => {
   try {
-    const downloads = await storage.getUserDownloads(req.session!.userId);
+    const downloads = await storage.getUserDownloads(getUserId(req));
     res.json(downloads);
   } catch (error) {
     console.error("Get downloads error:", error);
@@ -202,7 +207,7 @@ router.get("/downloads", requireAuth, async (req, res) => {
 // Get user orders
 router.get("/orders", requireAuth, async (req, res) => {
   try {
-    const orders = await storage.getUserOrders(req.session!.userId);
+    const orders = await storage.getUserOrders(getUserId(req));
 
     const ordersWithItems = await Promise.all(
       orders.map(async (order) => {

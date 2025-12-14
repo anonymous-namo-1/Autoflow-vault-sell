@@ -160,7 +160,6 @@ function WishlistContent() {
       name: item.name,
       price: item.price,
       image: item.image,
-      quantity: 1,
     });
   };
 
