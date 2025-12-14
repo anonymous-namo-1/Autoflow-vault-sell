@@ -282,11 +282,11 @@ export default function ProductDetail() {
 
               <div className="flex items-baseline gap-3">
                 <span className="text-4xl font-bold" data-testid="text-price">
-                  ${price.toFixed(2)}
+                  ₹{Math.round(price)}/-
                 </span>
                 {originalPrice && (
                   <span className="text-xl text-muted-foreground line-through">
-                    ${originalPrice.toFixed(2)}
+                    ₹{Math.round(originalPrice)}/-
                   </span>
                 )}
               </div>

@@ -190,7 +190,7 @@ export default function OrderConfirmation() {
                           {item.productName}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Qty: {item.quantity} x ${parseFloat(item.price).toFixed(2)}
+                          Qty: {item.quantity} x ₹{Math.round(parseFloat(item.price))}/-
                         </p>
                       </div>
                       <Button
@@ -211,7 +211,7 @@ export default function OrderConfirmation() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span data-testid="text-order-subtotal">
-                      ${parseFloat(order.subtotal).toFixed(2)}
+                      ₹{Math.round(parseFloat(order.subtotal))}/-
                     </span>
                   </div>
 
@@ -219,7 +219,7 @@ export default function OrderConfirmation() {
                     <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
                       <span>Discount</span>
                       <span data-testid="text-order-discount">
-                        -${parseFloat(order.discount).toFixed(2)}
+                        -₹{Math.round(parseFloat(order.discount))}/-
                       </span>
                     </div>
                   )}
@@ -229,7 +229,7 @@ export default function OrderConfirmation() {
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Total Paid</span>
                     <span data-testid="text-order-total">
-                      ${parseFloat(order.total).toFixed(2)}
+                      ₹{Math.round(parseFloat(order.total))}/-
                     </span>
                   </div>
                 </div>

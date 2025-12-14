@@ -4,7 +4,6 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Download, 
   Code, 
@@ -16,33 +15,6 @@ import {
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
 import { useCartStore } from "@/stores/cartStore";
 import type { Product } from "@shared/schema";
-
-function useCountUp(end: number, duration: number = 2000, startOnView: boolean = true) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const hasStarted = useRef(false);
-
-  useEffect(() => {
-    if (startOnView && isInView && !hasStarted.current) {
-      hasStarted.current = true;
-      let startTime: number;
-      const animate = (currentTime: number) => {
-        if (!startTime) startTime = currentTime;
-        const progress = Math.min((currentTime - startTime) / duration, 1);
-        setCount(Math.floor(progress * end));
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        } else {
-          setCount(end);
-        }
-      };
-      requestAnimationFrame(animate);
-    }
-  }, [isInView, end, duration, startOnView]);
-
-  return { count, ref };
-}
 
 function FloatingShape({ 
   className, 
@@ -192,17 +164,8 @@ function HeroSection() {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="flex items-center justify-center gap-2 text-muted-foreground"
           >
-            <div className="flex -space-x-2">
-              {[1, 2, 3, 4].map((i) => (
-                <Avatar key={i} className="w-8 h-8 border-2 border-background">
-                  <AvatarFallback className="text-xs bg-muted">
-                    {String.fromCharCode(64 + i)}
-                  </AvatarFallback>
-                </Avatar>
-              ))}
-            </div>
             <span className="text-sm" data-testid="text-trust-indicator">
-              Trusted by <TrustCounter /> developers
+              Ready-to-use automation solutions for your business
             </span>
           </motion.div>
         </motion.div>
@@ -211,14 +174,6 @@ function HeroSection() {
   );
 }
 
-function TrustCounter() {
-  const { count, ref } = useCountUp(10000, 2000);
-  return (
-    <span ref={ref} className="font-semibold text-foreground">
-      {count.toLocaleString()}+
-    </span>
-  );
-}
 
 function FeaturesSection() {
   const ref = useRef<HTMLDivElement>(null);
@@ -396,7 +351,7 @@ function FeaturedProductsSection() {
                             className="text-lg font-bold mb-3"
                             data-testid={`text-product-price-${product.id}`}
                           >
-                            ${parseFloat(product.price).toFixed(2)}
+                            ₹{Math.round(parseFloat(product.price))}/-
                           </p>
                           <Button 
                             className="w-full"
@@ -437,61 +392,40 @@ function FeaturedProductsSection() {
   );
 }
 
-function StatsSection() {
-  const stats = [
-    { value: 10000, label: "Downloads", suffix: "+" },
-    { value: 500, label: "Templates", suffix: "+" },
-    { value: 4.9, label: "Rating", suffix: "", isDecimal: true },
-    { value: 24, label: "Support", suffix: "/7" },
+function ValuePropositionSection() {
+  const highlights = [
+    { label: "Instant Access", description: "Download immediately after purchase" },
+    { label: "Easy Setup", description: "Clear documentation included" },
+    { label: "Quality Tested", description: "All templates thoroughly verified" },
+    { label: "Support Included", description: "Email support for setup questions" },
   ];
 
   return (
     <section 
       className="py-16 bg-foreground text-background"
-      data-testid="section-stats"
+      data-testid="section-value-proposition"
     >
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
-            <StatItem key={stat.label} {...stat} index={index} />
+          {highlights.map((item, index) => (
+            <motion.div
+              key={item.label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="text-center"
+              data-testid={`highlight-${index}`}
+            >
+              <div className="text-lg font-bold mb-1">
+                {item.label}
+              </div>
+              <div className="text-sm opacity-70">{item.description}</div>
+            </motion.div>
           ))}
         </div>
       </div>
     </section>
-  );
-}
-
-function StatItem({ 
-  value, 
-  label, 
-  suffix, 
-  index,
-  isDecimal = false 
-}: { 
-  value: number; 
-  label: string; 
-  suffix: string; 
-  index: number;
-  isDecimal?: boolean;
-}) {
-  const { count, ref } = useCountUp(isDecimal ? Math.floor(value * 10) : value, 2000);
-  const displayValue = isDecimal ? (count / 10).toFixed(1) : count.toLocaleString();
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className="text-center"
-      data-testid={`stat-${label.toLowerCase()}`}
-    >
-      <div className="text-3xl md:text-4xl font-bold mb-1">
-        {displayValue}{suffix}
-      </div>
-      <div className="text-sm opacity-70">{label}</div>
-    </motion.div>
   );
 }
 
@@ -506,7 +440,7 @@ export default function Home() {
         <HeroSection />
         <FeaturesSection />
         <FeaturedProductsSection />
-        <StatsSection />
+        <ValuePropositionSection />
       </main>
       <Footer />
     </div>

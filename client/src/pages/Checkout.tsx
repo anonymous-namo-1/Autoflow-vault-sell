@@ -239,7 +239,7 @@ export default function Checkout() {
                       ) : (
                         <>
                           <Lock className="h-4 w-4 mr-2" />
-                          Pay ${total.toFixed(2)} with Razorpay
+                          Pay ₹{Math.round(total)}/- with Razorpay
                         </>
                       )}
                     </Button>
@@ -293,7 +293,7 @@ export default function Checkout() {
                           <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                         </div>
                         <p className="font-medium text-sm">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ₹{Math.round(item.price * item.quantity)}/-
                         </p>
                       </div>
                     ))}
@@ -304,13 +304,13 @@ export default function Checkout() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span data-testid="text-checkout-subtotal">${cartSubtotal.toFixed(2)}</span>
+                      <span data-testid="text-checkout-subtotal">₹{Math.round(cartSubtotal)}/-</span>
                     </div>
 
                     {discount > 0 && (
                       <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
                         <span>Discount</span>
-                        <span data-testid="text-checkout-discount">-${discount.toFixed(2)}</span>
+                        <span data-testid="text-checkout-discount">-₹{Math.round(discount)}/-</span>
                       </div>
                     )}
 
@@ -318,7 +318,7 @@ export default function Checkout() {
 
                     <div className="flex justify-between font-semibold text-lg">
                       <span>Total</span>
-                      <span data-testid="text-checkout-total">${total.toFixed(2)}</span>
+                      <span data-testid="text-checkout-total">₹{Math.round(total)}/-</span>
                     </div>
                   </div>
                 </CardContent>

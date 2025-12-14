@@ -157,9 +157,9 @@ function DashboardContent() {
   ];
 
   const recentOrders = [
-    { id: "1", orderNumber: "ORD-2024-001", date: "Dec 10, 2024", total: "$149.00", status: "paid", items: 2 },
-    { id: "2", orderNumber: "ORD-2024-002", date: "Dec 8, 2024", total: "$79.00", status: "paid", items: 1 },
-    { id: "3", orderNumber: "ORD-2024-003", date: "Dec 5, 2024", total: "$199.00", status: "pending", items: 3 },
+    { id: "1", orderNumber: "ORD-2024-001", date: "Dec 10, 2024", total: "₹12,499/-", status: "paid", items: 2 },
+    { id: "2", orderNumber: "ORD-2024-002", date: "Dec 8, 2024", total: "₹6,599/-", status: "paid", items: 1 },
+    { id: "3", orderNumber: "ORD-2024-003", date: "Dec 5, 2024", total: "₹16,599/-", status: "pending", items: 3 },
   ];
 
   return (

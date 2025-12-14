@@ -259,53 +259,53 @@ function PurchaseHistoryContent() {
       id: "1", 
       orderNumber: "ORD-2024-001", 
       date: "Dec 10, 2024", 
-      total: "$149.00", 
+      total: "₹12,499/-", 
       status: "paid",
       items: [
-        { id: "1a", name: "Email Automation Suite", price: "$79.00" },
-        { id: "1b", name: "CRM Integration Pack", price: "$70.00" },
+        { id: "1a", name: "Email Automation Suite", price: "₹6,599/-" },
+        { id: "1b", name: "CRM Integration Pack", price: "₹5,900/-" },
       ]
     },
     { 
       id: "2", 
       orderNumber: "ORD-2024-002", 
       date: "Dec 8, 2024", 
-      total: "$79.00", 
+      total: "₹6,599/-", 
       status: "paid",
       items: [
-        { id: "2a", name: "Social Media Scheduler", price: "$79.00" },
+        { id: "2a", name: "Social Media Scheduler", price: "₹6,599/-" },
       ]
     },
     { 
       id: "3", 
       orderNumber: "ORD-2024-003", 
       date: "Dec 5, 2024", 
-      total: "$199.00", 
+      total: "₹16,599/-", 
       status: "pending",
       items: [
-        { id: "3a", name: "Analytics Dashboard Pro", price: "$99.00" },
-        { id: "3b", name: "Invoice Generator", price: "$50.00" },
-        { id: "3c", name: "Task Workflow Bundle", price: "$50.00" },
+        { id: "3a", name: "Analytics Dashboard Pro", price: "₹8,299/-" },
+        { id: "3b", name: "Invoice Generator", price: "₹4,150/-" },
+        { id: "3c", name: "Task Workflow Bundle", price: "₹4,150/-" },
       ]
     },
     { 
       id: "4", 
       orderNumber: "ORD-2024-004", 
       date: "Nov 28, 2024", 
-      total: "$89.00", 
+      total: "₹7,499/-", 
       status: "paid",
       items: [
-        { id: "4a", name: "Lead Generation Template", price: "$89.00" },
+        { id: "4a", name: "Lead Generation Template", price: "₹7,499/-" },
       ]
     },
     { 
       id: "5", 
       orderNumber: "ORD-2024-005", 
       date: "Nov 20, 2024", 
-      total: "$129.00", 
+      total: "₹10,799/-", 
       status: "refunded",
       items: [
-        { id: "5a", name: "Customer Support Bot", price: "$129.00" },
+        { id: "5a", name: "Customer Support Bot", price: "₹10,799/-" },
       ]
     },
   ];

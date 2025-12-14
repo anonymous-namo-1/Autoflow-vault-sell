@@ -130,11 +130,11 @@ export function ProductCard({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-xl font-bold" data-testid={`text-price-${id}`}>
-                        ${price.toFixed(2)}
+                        ₹{Math.round(price)}/-
                       </span>
                       {originalPrice && (
                         <span className="text-sm text-muted-foreground line-through">
-                          ${originalPrice.toFixed(2)}
+                          ₹{Math.round(originalPrice)}/-
                         </span>
                       )}
                     </div>
@@ -245,11 +245,11 @@ export function ProductCard({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold" data-testid={`text-price-${id}`}>
-                  ${price.toFixed(2)}
+                  ₹{Math.round(price)}/-
                 </span>
                 {originalPrice && (
                   <span className="text-sm text-muted-foreground line-through">
-                    ${originalPrice.toFixed(2)}
+                    ₹{Math.round(originalPrice)}/-
                   </span>
                 )}
               </div>

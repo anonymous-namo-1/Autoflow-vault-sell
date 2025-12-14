@@ -54,7 +54,7 @@ export default function Products() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState<SortOption>('popular');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -169,7 +169,7 @@ export default function Products() {
   const clearFilters = () => {
     setSelectedCategories([]);
     setSelectedTags([]);
-    setPriceRange([0, 100]);
+    setPriceRange([0, 1000]);
     setMinRating(0);
     setSearchQuery('');
     setCurrentPage(1);
@@ -179,7 +179,7 @@ export default function Products() {
     selectedCategories.length > 0 ||
     selectedTags.length > 0 ||
     priceRange[0] > 0 ||
-    priceRange[1] < 100 ||
+    priceRange[1] < 1000 ||
     minRating > 0;
 
   const FilterContent = () => (
@@ -222,8 +222,8 @@ export default function Products() {
                 data-testid="slider-price"
               />
               <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>${priceRange[0]}</span>
-                <span>${priceRange[1]}</span>
+                <span>₹{priceRange[0]}/-</span>
+                <span>₹{priceRange[1]}/-</span>
               </div>
             </div>
           </AccordionContent>

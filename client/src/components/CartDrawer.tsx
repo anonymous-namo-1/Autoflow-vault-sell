@@ -51,7 +51,7 @@ export function CartDrawer() {
         setAppliedCoupon(data);
         toast({
           title: 'Coupon applied',
-          description: `Discount of ${data.discountType === 'percentage' ? `${data.discountValue}%` : `$${data.discountValue}`} applied`,
+          description: `Discount of ${data.discountType === 'percentage' ? `${data.discountValue}%` : `₹${data.discountValue}/-`} applied`,
         });
       } else {
         toast({
@@ -169,7 +169,7 @@ export function CartDrawer() {
                           {item.name}
                         </h4>
                         <p className="text-sm font-semibold mt-1" data-testid={`text-cart-item-price-${item.productId}`}>
-                          ${item.price.toFixed(2)}
+                          ₹{Math.round(item.price)}/-
                         </p>
 
                         <div className="flex items-center justify-between mt-2">
@@ -262,7 +262,7 @@ export function CartDrawer() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span data-testid="text-subtotal">${cartSubtotal.toFixed(2)}</span>
+                  <span data-testid="text-subtotal">₹{Math.round(cartSubtotal)}/-</span>
                 </div>
 
                 {discount > 0 && (
@@ -272,7 +272,7 @@ export function CartDrawer() {
                     className="flex justify-between text-sm text-green-600 dark:text-green-400"
                   >
                     <span>Discount</span>
-                    <span data-testid="text-discount">-${discount.toFixed(2)}</span>
+                    <span data-testid="text-discount">-₹{Math.round(discount)}/-</span>
                   </motion.div>
                 )}
 
@@ -280,7 +280,7 @@ export function CartDrawer() {
 
                 <div className="flex justify-between font-semibold">
                   <span>Total</span>
-                  <span data-testid="text-total">${total.toFixed(2)}</span>
+                  <span data-testid="text-total">₹{Math.round(total)}/-</span>
                 </div>
               </div>
 
