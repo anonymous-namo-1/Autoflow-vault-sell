@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRoute, Link } from 'wouter';
 import { motion } from 'framer-motion';
-import { Check, Download, Mail, ArrowRight, Package } from 'lucide-react';
+import { Check, Download, Mail, ArrowRight, Package, Play, ExternalLink, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -18,6 +18,8 @@ interface OrderItem {
   productName: string;
   price: string;
   quantity: number;
+  driveDownloadUrl: string | null;
+  youtubeVideoUrl: string | null;
 }
 
 interface Order {
@@ -193,14 +195,33 @@ export default function OrderConfirmation() {
                           Qty: {item.quantity} x ₹{Math.round(parseFloat(item.price))}/-
                         </p>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        data-testid={`button-download-${item.productId}`}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </Button>
+                      {item.driveDownloadUrl ? (
+                        <a
+                          href={item.driveDownloadUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            data-testid={`button-download-${item.productId}`}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                            <ExternalLink className="h-3 w-3 ml-1" />
+                          </Button>
+                        </a>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          data-testid={`button-download-${item.productId}`}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Coming Soon
+                        </Button>
+                      )}
                     </motion.div>
                   ))}
                 </div>
@@ -243,6 +264,48 @@ export default function OrderConfirmation() {
               </CardContent>
             </Card>
           </motion.div>
+
+          {/* Tutorial Video Section */}
+          {order.items.some(item => item.youtubeVideoUrl) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0 }}
+              className="mt-6"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Play className="h-5 w-5" />
+                    Getting Started Tutorial
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {order.items.filter(item => item.youtubeVideoUrl).map((item) => {
+                    const videoId = item.youtubeVideoUrl?.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
+                    if (!videoId) return null;
+                    return (
+                      <div key={item.id} className="space-y-2">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Watch this tutorial to get started with {item.productName}:
+                        </p>
+                        <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${videoId}`}
+                            title={`${item.productName} Tutorial`}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            data-testid={`video-tutorial-${item.productId}`}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}

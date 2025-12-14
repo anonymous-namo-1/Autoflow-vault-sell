@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Particle {
   x: number;
@@ -18,6 +18,21 @@ interface ParticleBackgroundProps {
   maxSize?: number;
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+  
+  return isMobile;
+}
+
 export default function ParticleBackground({
   className = "",
   particleCount = 50,
@@ -29,6 +44,10 @@ export default function ParticleBackground({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animationRef = useRef<number>(0);
+  const isMobile = useIsMobile();
+  
+  // Reduce particle count on mobile for better performance
+  const actualParticleCount = isMobile ? Math.min(particleCount, 20) : particleCount;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -47,7 +66,7 @@ export default function ParticleBackground({
 
     const initParticles = () => {
       particlesRef.current = [];
-      for (let i = 0; i < particleCount; i++) {
+      for (let i = 0; i < actualParticleCount; i++) {
         particlesRef.current.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
@@ -105,7 +124,7 @@ export default function ParticleBackground({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [particleCount, particleColor, maxSpeed, minSize, maxSize]);
+  }, [actualParticleCount, particleColor, maxSpeed, minSize, maxSize]);
 
   return (
     <canvas

@@ -204,10 +204,10 @@ router.post("/verify-payment", requireAuth, async (req, res) => {
   }
 });
 
-// Get order by ID
-router.get("/:orderId", requireAuth, async (req, res) => {
+// Get order by ID - allows guest access for recently created orders
+router.get("/:orderId", async (req, res) => {
   try {
-    const userId = req.session!.userId;
+    const userId = req.session?.userId;
     const { orderId } = req.params;
 
     const order = await storage.getOrderById(orderId);
@@ -215,13 +215,30 @@ router.get("/:orderId", requireAuth, async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (order.userId !== userId) {
+    // Allow access if: user owns the order, or it's a guest order (no userId), or within 24 hours of creation
+    const isOwner = userId && order.userId === userId;
+    const isGuestOrder = !order.userId;
+    const isRecent = order.createdAt && (Date.now() - new Date(order.createdAt).getTime()) < 24 * 60 * 60 * 1000;
+    
+    if (!isOwner && !isGuestOrder && !isRecent) {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
     const items = await storage.getOrderItems(orderId);
+    
+    // Fetch product details for each item to get download URLs
+    const itemsWithProducts = await Promise.all(
+      items.map(async (item) => {
+        const product = await storage.getProductById(item.productId);
+        return {
+          ...item,
+          driveDownloadUrl: product?.driveDownloadUrl || null,
+          youtubeVideoUrl: product?.youtubeVideoUrl || null,
+        };
+      })
+    );
 
-    res.json({ ...order, items });
+    res.json({ ...order, items: itemsWithProducts });
   } catch (error) {
     console.error("Get order error:", error);
     res.status(500).json({ message: "Failed to get order" });
