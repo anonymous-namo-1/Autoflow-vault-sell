@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/stores/cartStore';
 import { useWishlistStore } from '@/stores/wishlistStore';
+import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/lib/utils';
 import { Link } from 'wouter';
 
@@ -35,7 +36,8 @@ export function ProductCard({
   viewMode = 'grid',
 }: ProductCardProps) {
   const { addItem, hasItem } = useCartStore();
-  const { toggleItem, hasItem: isInWishlist } = useWishlistStore();
+  const { toggleItem, hasItem: isInWishlist, addToServer, removeFromServer } = useWishlistStore();
+  const { isAuthenticated } = useAuthStore();
 
   const inCart = hasItem(id);
   const inWishlist = isInWishlist(id);
@@ -56,6 +58,7 @@ export function ProductCard({
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    const wasInWishlist = inWishlist;
     toggleItem({
       id: `wishlist-${id}`,
       productId: id,
@@ -64,6 +67,13 @@ export function ProductCard({
       originalPrice,
       image,
     });
+    if (isAuthenticated) {
+      if (wasInWishlist) {
+        removeFromServer(id);
+      } else {
+        addToServer(id);
+      }
+    }
   };
 
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;

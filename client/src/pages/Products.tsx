@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearch, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Grid, List, SlidersHorizontal, X, Star } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -51,8 +52,14 @@ interface NormalizedProduct {
 }
 
 export default function Products() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const searchString = useSearch();
+  const [, setLocation] = useLocation();
+  const urlParams = new URLSearchParams(searchString);
+  const initialSearch = urlParams.get('q') || urlParams.get('search') || '';
+  const initialCategory = urlParams.get('category') || '';
+  
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategory ? [initialCategory] : []);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [minRating, setMinRating] = useState(0);
@@ -60,6 +67,19 @@ export default function Products() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('q', searchQuery);
+    if (selectedCategories.length === 1) params.set('category', selectedCategories[0]);
+    const newSearch = params.toString();
+    const currentPath = window.location.pathname;
+    if (newSearch) {
+      window.history.replaceState(null, '', `${currentPath}?${newSearch}`);
+    } else {
+      window.history.replaceState(null, '', currentPath);
+    }
+  }, [searchQuery, selectedCategories]);
 
   const { data: categoriesData } = useQuery<Category[]>({
     queryKey: ['/api/products/categories/all'],

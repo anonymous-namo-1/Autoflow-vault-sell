@@ -35,6 +35,9 @@ function AppRouter() {
       <Route path="/products" component={Products} />
       <Route path="/templates" component={Products} />
       <Route path="/products/:slug" component={ProductDetail} />
+      <Route path="/templates/:slug" component={ProductDetail} />
+      <Route path="/signup" component={Register} />
+      <Route path="/checkout/success" component={OrderConfirmation} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/cart" component={Cart} />
       <Route path="/order/:orderId" component={OrderConfirmation} />
