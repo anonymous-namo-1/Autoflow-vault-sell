@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { randomInt } from "crypto";
 import { storage } from "./storage";
 import { registerSchema, loginSchema, verifyOtpSchema, resetPasswordSchema, forgotPasswordSchema } from "@shared/schema";
+import { sendOtpEmail } from "./email";
 import "./types";
 
 const router = Router();
@@ -48,7 +49,7 @@ router.post("/register", async (req, res) => {
       expiresAt: getExpirationTime(15),
     });
 
-    console.log(`[DEV] Verification OTP for ${email}: ${otp}`);
+    await sendOtpEmail(email, otp, "email_verification");
 
     res.status(201).json({
       message: "Account created. Please check your email for verification code.",
@@ -190,7 +191,7 @@ router.post("/resend-verification", async (req, res) => {
       expiresAt: getExpirationTime(15),
     });
 
-    console.log(`[DEV] Verification OTP for ${email}: ${otp}`);
+    await sendOtpEmail(email, otp, "email_verification");
 
     res.json({ message: "Verification code sent" });
   } catch (error) {
@@ -223,7 +224,7 @@ router.post("/forgot-password", async (req, res) => {
       expiresAt: getExpirationTime(15),
     });
 
-    console.log(`[DEV] Password reset OTP for ${email}: ${otp}`);
+    await sendOtpEmail(email, otp, "password_reset");
 
     res.json({ message: "If an account exists, a reset code has been sent" });
   } catch (error) {

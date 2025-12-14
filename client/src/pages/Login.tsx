@@ -31,6 +31,9 @@ export default function Login() {
   const { toast } = useToast();
   const { login } = useAuthStore();
 
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirectPath = searchParams.get("redirect") || "/";
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -53,7 +56,7 @@ export default function Login() {
         title: "Welcome back!",
         description: "You have successfully logged in.",
       });
-      setLocation("/");
+      setLocation(redirectPath);
     } catch (error) {
       toast({
         title: "Login failed",
