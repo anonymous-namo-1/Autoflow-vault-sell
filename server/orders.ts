@@ -138,19 +138,23 @@ router.post("/create", async (req, res) => {
   }
 });
 
-// Verify payment
-router.post("/verify-payment", requireAuth, async (req, res) => {
+// Verify payment - does NOT require auth since signature validation is sufficient
+router.post("/verify-payment", async (req, res) => {
   try {
-    const userId = req.session!.userId;
     const { orderId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+    
+    console.log("Verify payment called:", { orderId, razorpayPaymentId, razorpayOrderId });
 
     const order = await storage.getOrderById(orderId);
     if (!order) {
+      console.log("Order not found:", orderId);
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (order.userId !== userId) {
-      return res.status(403).json({ message: "Unauthorized" });
+    // Verify the razorpayOrderId matches what we have stored
+    if (order.razorpayOrderId !== razorpayOrderId) {
+      console.log("Razorpay order ID mismatch");
+      return res.status(403).json({ message: "Order ID mismatch" });
     }
 
     if (order.status === "paid") {
@@ -179,24 +183,27 @@ router.post("/verify-payment", requireAuth, async (req, res) => {
       paidAt: new Date(),
     });
 
-    // Create download links for each item
+    // Create download links for each item (only for logged-in users)
     const orderItems = await storage.getOrderItems(orderId);
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
-    for (const item of orderItems) {
-      await storage.createDownload({
-        userId,
-        orderId,
-        productId: item.productId,
-        token: generateDownloadToken(),
-        maxDownloads: 5,
-        expiresAt,
-      });
+    if (order.userId) {
+      for (const item of orderItems) {
+        await storage.createDownload({
+          userId: order.userId,
+          orderId,
+          productId: item.productId,
+          token: generateDownloadToken(),
+          maxDownloads: 5,
+          expiresAt,
+        });
+      }
+
+      // Clear user's cart
+      await storage.clearCart(order.userId);
     }
 
-    // Clear user's cart
-    await storage.clearCart(userId);
-
+    console.log("Payment verified successfully for order:", orderId);
     res.json({ success: true, orderId: order.id });
   } catch (error) {
     console.error("Verify payment error:", error);
