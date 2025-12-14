@@ -3,7 +3,6 @@ import { useRoute, Link } from 'wouter';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Star,
   Heart,
   Download,
   Check,
@@ -107,7 +106,6 @@ export default function ProductDetail() {
   const inWishlist = isInWishlist(product.id);
   const price = parseFloat(product.price);
   const originalPrice = product.originalPrice ? parseFloat(product.originalPrice) : undefined;
-  const rating = parseFloat(product.rating || '0');
   const categoryName = product.category?.name || 'Uncategorized';
 
   const discount = originalPrice
@@ -144,18 +142,6 @@ export default function ProductDetail() {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     setZoomPosition({ x, y });
-  };
-
-  const renderStars = (r: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={cn(
-          'w-5 h-5',
-          i < Math.floor(r) ? 'fill-foreground text-foreground' : 'text-muted-foreground'
-        )}
-      />
-    ));
   };
 
   const relatedProducts = (featuredProducts || [])
@@ -272,12 +258,6 @@ export default function ProductDetail() {
                 <h1 className="text-3xl font-bold mb-3" data-testid="text-product-name">
                   {product.name}
                 </h1>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="flex items-center gap-1">{renderStars(rating)}</div>
-                  <span className="text-sm text-muted-foreground">
-                    {rating.toFixed(1)} ({product.reviewCount || 0} reviews)
-                  </span>
-                </div>
               </div>
 
               <div className="flex items-baseline gap-3">
@@ -448,8 +428,6 @@ export default function ProductDetail() {
                     price={parseFloat(p.price)}
                     originalPrice={p.originalPrice ? parseFloat(p.originalPrice) : undefined}
                     category={p.categoryId || 'Uncategorized'}
-                    rating={parseFloat(p.rating || '0')}
-                    reviewCount={p.reviewCount || 0}
                   />
                 ))}
               </div>

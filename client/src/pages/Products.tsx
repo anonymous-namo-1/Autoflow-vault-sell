@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearch, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Grid, List, SlidersHorizontal, X, Star } from 'lucide-react';
+import { Search, Grid, List, SlidersHorizontal, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -46,8 +46,6 @@ interface NormalizedProduct {
   originalPrice?: number;
   categoryId: string | null;
   categoryName: string;
-  rating: number;
-  reviewCount: number;
   tags: string[];
 }
 
@@ -62,7 +60,6 @@ export default function Products() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategory ? [initialCategory] : []);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState<SortOption>('popular');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
@@ -114,8 +111,6 @@ export default function Products() {
       originalPrice: p.originalPrice ? parseFloat(p.originalPrice) : undefined,
       categoryId: p.categoryId,
       categoryName: categories.find(c => c.id === p.categoryId)?.name || 'Uncategorized',
-      rating: parseFloat(p.rating || '0'),
-      reviewCount: p.reviewCount || 0,
       tags: p.tags || [],
     }));
   }, [productsData?.products, categories]);
@@ -143,10 +138,6 @@ export default function Products() {
 
     filtered = filtered.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
-    if (minRating > 0) {
-      filtered = filtered.filter((p) => p.rating >= minRating);
-    }
-
     switch (sortBy) {
       case 'price_asc':
         filtered.sort((a, b) => a.price - b.price);
@@ -158,12 +149,11 @@ export default function Products() {
         filtered.sort((a, b) => b.id.localeCompare(a.id));
         break;
       case 'popular':
-        filtered.sort((a, b) => b.reviewCount - a.reviewCount);
         break;
     }
 
     return filtered;
-  }, [normalizedProducts, searchQuery, selectedCategories, selectedTags, priceRange, minRating, sortBy]);
+  }, [normalizedProducts, searchQuery, selectedCategories, selectedTags, priceRange, sortBy]);
 
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -190,7 +180,6 @@ export default function Products() {
     setSelectedCategories([]);
     setSelectedTags([]);
     setPriceRange([0, 1000]);
-    setMinRating(0);
     setSearchQuery('');
     setCurrentPage(1);
   };
@@ -199,12 +188,11 @@ export default function Products() {
     selectedCategories.length > 0 ||
     selectedTags.length > 0 ||
     priceRange[0] > 0 ||
-    priceRange[1] < 1000 ||
-    minRating > 0;
+    priceRange[1] < 1000;
 
   const FilterContent = () => (
     <div className="space-y-6">
-      <Accordion type="multiple" defaultValue={['categories', 'price', 'tags', 'rating']}>
+      <Accordion type="multiple" defaultValue={['categories', 'price', 'tags']}>
         <AccordionItem value="categories">
           <AccordionTrigger data-testid="accordion-categories">Categories</AccordionTrigger>
           <AccordionContent>
@@ -268,39 +256,6 @@ export default function Products() {
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="rating">
-          <AccordionTrigger data-testid="accordion-rating">Rating</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-2">
-              {[4, 3, 2, 1].map((rating) => (
-                <label
-                  key={rating}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <Checkbox
-                    checked={minRating === rating}
-                    onCheckedChange={() => {
-                      setMinRating(minRating === rating ? 0 : rating);
-                      setCurrentPage(1);
-                    }}
-                    data-testid={`checkbox-rating-${rating}`}
-                  />
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-3.5 h-3.5 ${
-                          i < rating ? 'fill-foreground text-foreground' : 'text-muted-foreground'
-                        }`}
-                      />
-                    ))}
-                    <span className="text-sm ml-1">& up</span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
       </Accordion>
 
       {hasActiveFilters && (
@@ -366,7 +321,7 @@ export default function Products() {
                         Filters
                         {hasActiveFilters && (
                           <Badge variant="default" className="ml-2">
-                            {selectedCategories.length + selectedTags.length + (minRating > 0 ? 1 : 0)}
+                            {selectedCategories.length + selectedTags.length}
                           </Badge>
                         )}
                       </Button>
@@ -474,8 +429,6 @@ export default function Products() {
                         price={product.price}
                         originalPrice={product.originalPrice}
                         category={product.categoryName}
-                        rating={product.rating}
-                        reviewCount={product.reviewCount}
                         tags={product.tags}
                         viewMode={viewMode}
                       />

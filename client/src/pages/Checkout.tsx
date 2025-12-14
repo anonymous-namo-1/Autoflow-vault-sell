@@ -69,7 +69,7 @@ export default function Checkout() {
     },
     onSuccess: (data) => {
       clearCart();
-      setLocation(`/order/${data.orderId}`);
+      setLocation(`/checkout/success?orderId=${data.orderId}`);
     },
     onError: () => {
       toast({
@@ -125,16 +125,6 @@ export default function Checkout() {
   };
 
   const handlePayment = () => {
-    if (!isAuthenticated) {
-      toast({
-        title: 'Please login',
-        description: 'You need to be logged in to complete the purchase.',
-        variant: 'destructive',
-      });
-      setLocation('/login');
-      return;
-    }
-
     if (items.length === 0) {
       toast({
         title: 'Cart is empty',

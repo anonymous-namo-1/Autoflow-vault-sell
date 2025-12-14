@@ -35,14 +35,11 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
-// Create order
-router.post("/create", requireAuth, async (req, res) => {
+// Create order - allows guest checkout
+router.post("/create", async (req, res) => {
   try {
-    const userId = req.session!.userId;
-    if (!userId) {
-      return res.status(401).json({ message: "Authentication required" });
-    }
-    const { items, couponCode } = req.body;
+    const userId = req.session?.userId;
+    const { items, couponCode, guestEmail } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
@@ -348,18 +345,22 @@ router.post("/webhook", async (req: any, res) => {
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
       for (const item of orderItems) {
-        await storage.createDownload({
-          userId: order.userId,
-          orderId: order.id,
-          productId: item.productId,
-          token: generateDownloadToken(),
-          maxDownloads: 5,
-          expiresAt,
-        });
+        if (order.userId) {
+          await storage.createDownload({
+            userId: order.userId,
+            orderId: order.id,
+            productId: item.productId,
+            token: generateDownloadToken(),
+            maxDownloads: 5,
+            expiresAt,
+          });
+        }
       }
 
-      // Clear user's cart
-      await storage.clearCart(order.userId);
+      // Clear user's cart if logged in
+      if (order.userId) {
+        await storage.clearCart(order.userId);
+      }
 
       console.log(`Webhook: Order ${order.id} marked as paid via webhook`);
       return res.status(200).json({ message: "Payment processed successfully" });

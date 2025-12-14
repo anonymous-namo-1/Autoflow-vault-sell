@@ -1,0 +1,264 @@
+You are a senior full-stack engineer.
+Your task is to fix logic, flows, and trust issues in the existing AutomateHub project.
+❗ DO NOT redesign the UI or change styles unless required to fix bugs.
+❗ DO NOT add fake data, stats, reviews, or new pages unless explicitly asked.
+
+1. CHECKOUT FLOW (CRITICAL)
+Current problem
+
+Checkout forces login before payment (WRONG).
+
+Required behavior
+
+Allow guest checkout.
+
+User can:
+
+Add to cart
+
+Proceed to checkout
+
+Pay via Razorpay without logging in
+
+AFTER successful payment:
+
+If user is logged out → show “Login / Create account to access downloads”
+
+After login → unlock downloads + orders + dashboard
+
+Do NOT block payment behind authentication.
+
+2. POST-PAYMENT DELIVERY (CRITICAL)
+
+Create a real success & download flow.
+
+After verified Razorpay payment:
+
+Redirect to /checkout/success
+
+Show:
+
+✅ Payment successful
+
+Product(s) purchased
+
+Download section per product
+
+Button: “Download JSON”
+
+Link goes to a public Google Drive file URL (placeholder stored per product)
+
+Tutorial video
+
+Embed same YouTube video for all products
+
+Position: floating side widget
+
+Behavior:
+
+Autoplay
+
+Muted
+
+Explains how to import .json into n8n
+
+Make video ID configurable in code.
+
+3. REMOVE ALL FAKE SOCIAL PROOF (CRITICAL)
+
+❌ REMOVE everywhere:
+
+Star ratings (e.g., 4.9 ⭐)
+
+Reviews count
+
+Downloads count
+
+“Loved by thousands” type claims
+
+If data is not real, it must not exist.
+
+4. WISHLIST (FIX LOGIC)
+Current problem
+
+Wishlist works without login (local-only).
+
+Required behavior
+
+Wishlist is user-based, requires login.
+
+If logged out:
+
+Clicking ❤️ → redirect to login
+
+After login → return to previous page
+
+Wishlist page shows only user’s saved templates.
+
+No guest wishlist.
+
+5. SEARCH (KEEP, FIX IF NEEDED)
+
+Search must:
+
+Filter templates by title, tags, short description
+
+Must NOT:
+
+Break routing
+
+Return blank pages
+
+Keep it simple and reliable.
+
+6. DASHBOARD / ORDERS / SETTINGS (MINIMAL, FUNCTIONAL)
+
+All require login.
+
+/dashboard
+
+Show:
+
+User email
+
+Purchased templates
+
+Quick links to Orders, Wishlist, Settings
+
+/orders
+
+List:
+
+Order ID
+
+Date
+
+Amount (₹ placeholder)
+
+Purchased templates
+
+“Go to download” button
+
+/settings
+
+Change password
+
+Logout
+
+Minimal UI is fine. Functionality matters.
+
+7. AUTHENTICATION RULES
+
+Email + password only
+
+Password:
+
+Min 8 characters
+
+Forgot password:
+
+Email OTP only
+
+After login:
+
+Redirect to last visited page
+
+8. RAZORPAY (LIVE-READY)
+Required
+
+Razorpay live mode
+
+Backend:
+
+Create order
+
+Verify signature
+
+Webhook:
+
+Verify webhook signature
+
+Handle payment success idempotently
+
+Use env vars:
+
+RAZORPAY_KEY_ID
+
+RAZORPAY_KEY_SECRET
+
+RAZORPAY_WEBHOOK_SECRET
+
+9. PRICING & CURRENCY RULES
+
+Use Indian Rupees only
+
+Format exactly:
+
+₹199/-
+
+Whole numbers only
+
+Do NOT change existing card layouts
+
+Just ensure prices display correctly and consistently
+
+10. HERO & COPY (SMALL FIX ONLY)
+
+Improve clarity without redesign.
+
+Replace vague hero text with something explicit, for example:
+
+Ready-to-Use n8n Automation Templates
+Deploy proven workflows in minutes using JSON imports.
+
+No buzzwords. No fake claims.
+
+11. BACKGROUND PARTICLES (PERFORMANCE FIX)
+
+Keep particle background
+
+Reduce particle count on mobile
+
+Lower opacity
+
+Must not affect scroll or interaction performance
+
+12. LEGAL PAGES (KEEP AS IS)
+
+Privacy Policy
+
+Terms of Service
+
+Refund Policy (14 days)
+
+Ensure:
+
+Footer links work on all pages
+
+No broken routing
+
+13. CLEANUP & QUALITY
+
+No 404 routes
+
+No dead links
+
+No console errors
+
+No unused components
+
+No hallucinated features
+
+OUTPUT REQUIREMENTS
+
+After completing changes:
+
+Provide a short summary of what was fixed
+
+List remaining limitations (e.g., Google Drive link security)
+
+Confirm app runs without errors
+
+🚫 ABSOLUTE RULE
+
+If something is not explicitly requested above, DO NOT add it.

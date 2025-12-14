@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
+import { useLocation } from 'wouter';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,6 @@ export interface ProductCardProps {
   originalPrice?: number;
   category: string;
   image?: string;
-  rating: number;
-  reviewCount?: number;
   tags?: string[];
   viewMode?: 'grid' | 'list';
 }
@@ -31,13 +30,12 @@ export function ProductCard({
   originalPrice,
   category,
   image,
-  rating,
-  reviewCount = 0,
   viewMode = 'grid',
 }: ProductCardProps) {
   const { addItem, hasItem } = useCartStore();
   const { toggleItem, hasItem: isInWishlist, addToServer, removeFromServer } = useWishlistStore();
   const { isAuthenticated } = useAuthStore();
+  const [, navigate] = useLocation();
 
   const inCart = hasItem(id);
   const inWishlist = isInWishlist(id);
@@ -58,6 +56,12 @@ export function ProductCard({
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    
     const wasInWishlist = inWishlist;
     toggleItem({
       id: `wishlist-${id}`,
@@ -67,28 +71,14 @@ export function ProductCard({
       originalPrice,
       image,
     });
-    if (isAuthenticated) {
-      if (wasInWishlist) {
-        removeFromServer(id);
-      } else {
-        addToServer(id);
-      }
+    if (wasInWishlist) {
+      removeFromServer(id);
+    } else {
+      addToServer(id);
     }
   };
 
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
-
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={cn(
-          'w-3.5 h-3.5',
-          i < Math.floor(rating) ? 'fill-foreground text-foreground' : 'text-muted-foreground'
-        )}
-      />
-    ));
-  };
 
   if (viewMode === 'list') {
     return (
@@ -131,10 +121,6 @@ export function ProductCard({
                     <h3 className="font-semibold text-lg mb-1" data-testid={`text-product-name-${id}`}>
                       {name}
                     </h3>
-                    <div className="flex items-center gap-1 mb-2">
-                      {renderStars(rating)}
-                      <span className="text-sm text-muted-foreground ml-1">({reviewCount})</span>
-                    </div>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -249,10 +235,6 @@ export function ProductCard({
               <h3 className="font-semibold line-clamp-1" data-testid={`text-product-name-${id}`}>
                 {name}
               </h3>
-              <div className="flex items-center gap-1">
-                {renderStars(rating)}
-                <span className="text-xs text-muted-foreground ml-1">({reviewCount})</span>
-              </div>
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold" data-testid={`text-price-${id}`}>
                   ₹{Math.round(price)}/-

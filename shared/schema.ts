@@ -138,7 +138,8 @@ export const coupons = pgTable("coupons", {
 // Orders
 export const orders = pgTable("orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id).notNull(),
+  userId: varchar("user_id").references(() => users.id),
+  guestEmail: text("guest_email"),
   orderNumber: text("order_number").notNull().unique(),
   status: text("status").notNull().default("pending"), // pending, paid, failed, refunded
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
