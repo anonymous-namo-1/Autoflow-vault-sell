@@ -344,9 +344,17 @@ function FeaturedProductsSection() {
                       <CardContent className="p-0">
                         <Link href={`/products/${product.slug}`}>
                           <div className="aspect-video bg-muted relative overflow-hidden rounded-t-xl cursor-pointer">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <Code className="w-12 h-12 text-muted-foreground/30" />
-                            </div>
+                            {product.images?.[0] ? (
+                              <img
+                                src={product.images[0]}
+                                alt={product.name}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Code className="w-12 h-12 text-muted-foreground/30" />
+                              </div>
+                            )}
                           </div>
                         </Link>
                         <div className="p-4">
