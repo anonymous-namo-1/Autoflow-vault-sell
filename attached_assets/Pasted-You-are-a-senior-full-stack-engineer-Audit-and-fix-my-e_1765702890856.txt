@@ -1,0 +1,266 @@
+You are a senior full-stack engineer. Audit and fix my existing project end-to-end. Do NOT redesign the UI unless necessary to fix broken layouts. Priority is: make all routes/pages/features work, remove fake content, and implement a real purchase → unlock download flow. Keep existing components/styles wherever possible.
+
+0) Hard requirements (must follow)
+Currency is Indian Rupees and all prices are displayed as placeholders like: ₹199/- (whole numbers only, no decimals).
+
+Remove fake testimonials/reviews sections entirely.
+
+Newsletter feature must be removed entirely (UI + routes + footer links).
+
+Implement real Wishlist (saved per logged-in user).
+
+Implement real Search (filter templates list).
+
+Add minimal functional: Orders page, User dashboard, Account settings (must require login).
+
+Auth: Email + Password, Forgot password via Email OTP. Password min 8 chars.
+
+After login, redirect user to last visited page (or a safe fallback if none).
+
+Payments: Razorpay live mode, backend signature verification, webhook support.
+
+Product delivery: after successful payment, show Download page with:
+
+a button linking to a public-with-link Google Drive file URL (placeholder link for now, stored per product).
+
+a YouTube video embedded as a floating side widget, autoplay muted, instructions on importing JSON to n8n (same video for all templates).
+
+1) Fix routing and broken pages (current issues)
+Currently many pages return 404 or blank states (Templates/About/Contact/Wishlist/Search/etc). Fix all broken routes, ensure navbar/footer links never 404. Every link should either:
+
+work fully, OR
+
+be explicitly removed (NOT left broken).
+
+Required routes:
+
+/ (Home)
+
+/templates (Templates listing)
+
+/templates/:id (Template detail)
+
+/cart
+
+/checkout
+
+/checkout/success
+
+/login
+
+/signup
+
+/forgot-password
+
+/dashboard (requires login)
+
+/orders (requires login)
+
+/settings (requires login)
+
+/wishlist (requires login)
+
+/privacy-policy
+
+/terms
+
+/refund-policy
+
+If About/Contact exist in UI, either implement minimal pages or remove all references. No dead links.
+
+2) Data model (use placeholders now, real products later)
+Create a simple product dataset in code for now (can be a JSON array or seed in DB). Each template should have:
+
+id, title, shortDescription, longDescription
+
+placeholderPrice (number)
+
+driveDownloadUrl (string, placeholder)
+
+tags/categories (array)
+
+thumbnail image (existing placeholder ok)
+
+Listing page shows cards with:
+
+existing design unchanged as much as possible
+
+title, shortDescription, placeholder price shown as “₹{price}/-”
+
+Add to cart button working
+
+Wishlist toggle button working (requires login, else redirect to login)
+
+Template detail page:
+
+shows template details
+
+price placeholder
+
+add to cart
+
+buy now (go to checkout)
+
+3) Cart + Checkout (fix bugs, make it consistent)
+Cart must persist during session (localStorage ok).
+
+Cart shows items, quantities (optional), subtotal (placeholder).
+
+Checkout:
+
+If user not logged in: allow checkout initiation (per requirement “Force login before checkout: NO”).
+
+BUT: download unlock and wishlist/orders/dashboard/settings require login.
+
+Therefore: after payment success, if user is not logged in, force a “Create account / Login to access download” gate.
+
+Implement Razorpay checkout:
+
+Use Razorpay live keys via env vars:
+
+RAZORPAY_KEY_ID
+
+RAZORPAY_KEY_SECRET
+
+Backend creates order with Razorpay Orders API.
+
+Frontend opens Razorpay checkout with order_id.
+
+Backend verifies payment signature (razorpay_payment_id, razorpay_order_id, razorpay_signature).
+
+Only after verification, mark purchase as PAID and create an Order record.
+
+Implement webhook endpoint:
+
+Verify webhook signature with webhook secret in env var.
+
+Handle payment.captured or relevant events to reconcile state.
+
+Make webhook idempotent.
+
+4) Orders / Dashboard / Settings (minimal functional, login required)
+All require authentication.
+
+Dashboard (/dashboard):
+
+Show: user email, quick links to Orders, Wishlist, Settings
+
+Show a “Purchased templates” list (from orders).
+
+Orders (/orders):
+
+List orders: order id, date, amount (placeholder ₹), status, templates purchased.
+
+Clicking an order opens details + “Go to Download” button for purchased templates.
+
+Settings (/settings):
+
+Change password (requires current password)
+
+Forgot password flow also exists separately.
+
+5) Authentication (email/password + email OTP reset)
+Implement:
+
+Signup: email + password (min 8)
+
+Login
+
+Persist session (JWT or secure session cookies; pick a simple secure approach).
+
+Forgot password:
+
+user enters email
+
+system generates OTP, emails OTP (use a placeholder email provider if none is configured; but structure code so it can be swapped later; at least log OTP in dev).
+
+user verifies OTP, sets new password.
+
+Redirect after login to last visited page:
+
+Save intended route before redirecting to login (including from wishlist/dashboard/settings/orders).
+
+After login, return user there.
+
+6) Wishlist (real)
+Logged-in users can save templates to wishlist.
+
+Wishlist page lists saved templates with remove button and link to template page.
+
+If logged out and user clicks wishlist toggle, redirect to login and then return.
+
+7) Search (real)
+Templates page has search input.
+
+Filters templates list by title/tags/shortDescription (client-side is fine for now).
+
+Must not break routing (no blank pages).
+
+Optional: add category/tag chips if already present, otherwise skip.
+
+8) Download page + YouTube floating widget
+After verified payment and user authenticated:
+
+Provide a download section per purchased template:
+
+“Download JSON” button → opens that template’s public Google Drive link.
+
+Show warning: “Link is hosted on Google Drive.”
+
+YouTube video widget:
+
+Fixed/floating on side of page (not blocking on mobile).
+
+Autoplay muted.
+
+Same video for all templates.
+
+Provide a config constant for the YouTube video ID.
+
+If user is not logged in after payment:
+
+Show “Login/Create account to access download.”
+
+After login, show the download section.
+
+9) Legal pages (generate content)
+Create and add content pages:
+
+Privacy Policy (simple startup-friendly)
+
+Terms of Service (simple startup-friendly)
+
+Refund Policy: refunds allowed within 14 days from purchase, with conditions:
+
+If file is not delivered or broken, refund eligible
+
+If user already accessed/downloaded successfully, refund may be denied (state clearly)
+
+Keep these pages accessible in footer links.
+
+10) Background particle animation (light background, dark particles)
+Add a lightweight React particle background:
+
+Dark particles on light background.
+
+Mobile-friendly: reduce particle count on small screens.
+
+Must not harm performance.
+
+Keep rest of design unchanged.
+
+11) Remove/clean up
+Remove newsletter UI and any forms/components/routes.
+
+Remove testimonials/reviews sections and fake counts if present (keep any real stats if they exist; otherwise remove).
+
+Fix any 404 routes by implementing or removing links.
+
+Ensure code quality: no console errors, no broken imports, no unused routes.
+
+12) Deliverables
+Implement everything above.
+
+Provide a short “What changed” summary and a checklist of what’s now working.
+
+Ensure it runs without errors and all routes are accessible.
