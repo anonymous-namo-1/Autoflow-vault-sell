@@ -29,14 +29,14 @@ export async function seedProducts() {
     // Seed products with INR prices
     const productData = [
       {
-        name: "100+ Social media content workflows",
+        name: "Automatic Social Media Workflows",
         slug: "social-media-content-workflows",
-        description: "Access 100+ pre-built social media content workflows to automate posting across multiple platforms. Save time and maintain consistent presence.",
-        shortDescription: "100+ pre-built workflows for social media automation.",
+        description: "Access pre-built social media content workflows to automate posting across multiple platforms. Save time and maintain consistent presence.",
+        shortDescription: "Automate your social media content across all platforms.",
         price: "199",
         originalPrice: "299",
         categoryId: categoryMap.get("social"),
-        images: ["/assets/workflow-diagram.png"],
+        images: ["/assets/automatic-social-workflows.png"],
         features: ["Multi-platform support", "Visual calendar", "Content recycling", "Best time optimization", "Analytics dashboard", "Team collaboration"],
         tags: ["social", "scheduling", "marketing"],
         rating: "4.9",

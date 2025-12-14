@@ -181,21 +181,27 @@ export default function ProductDetail() {
                 onMouseMove={handleMouseMove}
                 data-testid="image-main"
               >
-                <div
-                  className={cn(
-                    'w-full h-full bg-muted flex items-center justify-center transition-transform duration-200',
-                    isZoomed && 'scale-150'
-                  )}
-                  style={
-                    isZoomed
-                      ? {
-                          transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                        }
-                      : undefined
-                  }
-                >
-                  <ShoppingCart className="w-16 h-16 text-muted-foreground" />
-                </div>
+                {images[selectedImage] ? (
+                  <img
+                    src={images[selectedImage]}
+                    alt={product.name}
+                    className={cn(
+                      'w-full h-full object-cover transition-transform duration-200',
+                      isZoomed && 'scale-150'
+                    )}
+                    style={
+                      isZoomed
+                        ? {
+                            transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                          }
+                        : undefined
+                    }
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ShoppingCart className="w-16 h-16 text-muted-foreground" />
+                  </div>
+                )}
                 {discount > 0 && (
                   <Badge className="absolute top-4 left-4" variant="default">
                     -{discount}%
@@ -214,7 +220,7 @@ export default function ProductDetail() {
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <div className="flex-1 grid grid-cols-4 gap-2">
-                  {images.map((_, index) => (
+                  {images.map((img, index) => (
                     <button
                       key={index}
                       className={cn(
@@ -224,9 +230,17 @@ export default function ProductDetail() {
                       onClick={() => setSelectedImage(index)}
                       data-testid={`button-thumbnail-${index}`}
                     >
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ShoppingCart className="w-6 h-6 text-muted-foreground" />
-                      </div>
+                      {img ? (
+                        <img
+                          src={img}
+                          alt={`${product.name} thumbnail ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ShoppingCart className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
