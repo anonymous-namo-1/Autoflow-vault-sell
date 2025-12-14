@@ -10,8 +10,10 @@ import {
   Star, 
   ShoppingCart,
   ArrowRight,
-  Loader2
+  Loader2,
+  Zap
 } from "lucide-react";
+import { useLocation } from "wouter";
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
 import { useCartStore } from "@/stores/cartStore";
 import type { Product } from "@shared/schema";
@@ -275,6 +277,7 @@ function FeaturedProductsSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const controls = useAnimation();
   const { addItem, hasItem } = useCartStore();
+  const [, navigate] = useLocation();
 
   useEffect(() => {
     if (isInView) {
@@ -294,6 +297,19 @@ function FeaturedProductsSection() {
       price: parseFloat(product.price),
       originalPrice: product.originalPrice ? parseFloat(product.originalPrice) : undefined,
     });
+  };
+
+  const handleBuyNow = (product: Product) => {
+    if (!hasItem(product.id)) {
+      addItem({
+        id: `cart-${product.id}`,
+        productId: product.id,
+        name: product.name,
+        price: parseFloat(product.price),
+        originalPrice: product.originalPrice ? parseFloat(product.originalPrice) : undefined,
+      });
+    }
+    navigate('/checkout');
   };
 
   return (
@@ -372,15 +388,26 @@ function FeaturedProductsSection() {
                           >
                             ₹{Math.round(parseFloat(product.price))}/-
                           </p>
-                          <Button 
-                            className="w-full"
-                            disabled={inCart}
-                            onClick={() => handleAddToCart(product)}
-                            data-testid={`button-add-to-cart-${product.id}`}
-                          >
-                            <ShoppingCart className="w-4 h-4 mr-2" />
-                            {inCart ? 'In Cart' : 'Add to Cart'}
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              className="flex-1"
+                              variant="outline"
+                              disabled={inCart}
+                              onClick={() => handleAddToCart(product)}
+                              data-testid={`button-add-to-cart-${product.id}`}
+                            >
+                              <ShoppingCart className="w-4 h-4 mr-2" />
+                              {inCart ? 'In Cart' : 'Add to Cart'}
+                            </Button>
+                            <Button 
+                              className="flex-1"
+                              onClick={() => handleBuyNow(product)}
+                              data-testid={`button-buy-now-${product.id}`}
+                            >
+                              <Zap className="w-4 h-4 mr-2" />
+                              Buy Now
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
