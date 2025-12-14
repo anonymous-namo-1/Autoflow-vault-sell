@@ -62,6 +62,7 @@ export const products = pgTable("products", {
   tags: text("tags").array().default(sql`'{}'::text[]`),
   templateFile: text("template_file"), // JSON file path in object storage
   driveDownloadUrl: text("drive_download_url"),
+  youtubeVideoUrl: text("youtube_video_url"), // Tutorial video URL
   previewData: jsonb("preview_data"), // Sample JSON structure for preview
   downloadCount: integer("download_count").default(0),
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
