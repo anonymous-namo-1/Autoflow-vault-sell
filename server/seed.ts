@@ -36,7 +36,7 @@ export async function seedProducts() {
         price: "199",
         originalPrice: "299",
         categoryId: categoryMap.get("social"),
-        images: [],
+        images: ["/assets/workflow-diagram.png"],
         features: ["Multi-platform support", "Visual calendar", "Content recycling", "Best time optimization", "Analytics dashboard", "Team collaboration"],
         tags: ["social", "scheduling", "marketing"],
         rating: "4.9",

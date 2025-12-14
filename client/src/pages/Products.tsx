@@ -47,6 +47,7 @@ interface NormalizedProduct {
   categoryId: string | null;
   categoryName: string;
   tags: string[];
+  image?: string;
 }
 
 export default function Products() {
@@ -112,6 +113,7 @@ export default function Products() {
       categoryId: p.categoryId,
       categoryName: categories.find(c => c.id === p.categoryId)?.name || 'Uncategorized',
       tags: p.tags || [],
+      image: p.images && p.images.length > 0 ? p.images[0] : undefined,
     }));
   }, [productsData?.products, categories]);
 
@@ -429,6 +431,7 @@ export default function Products() {
                         price={product.price}
                         originalPrice={product.originalPrice}
                         category={product.categoryName}
+                        image={product.image}
                         tags={product.tags}
                         viewMode={viewMode}
                       />
