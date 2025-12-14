@@ -36,24 +36,19 @@ router.post("/register", async (req, res) => {
       email,
       password: hashedPassword,
       name,
-      isVerified: false,
+      isVerified: true,
       isAdmin: false,
     });
 
-    const otp = generateOTP();
-    await storage.createOtpToken({
-      userId: user.id,
-      email: user.email,
-      code: otp,
-      type: "email_verification",
-      expiresAt: getExpirationTime(15),
-    });
+    const { password: _, ...userWithoutPassword } = user;
 
-    await sendOtpEmail(email, otp, "email_verification");
+    if (req.session) {
+      req.session.userId = user.id;
+    }
 
     res.status(201).json({
-      message: "Account created. Please check your email for verification code.",
-      email: user.email,
+      message: "Account created successfully!",
+      user: userWithoutPassword,
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -79,14 +74,6 @@ router.post("/login", async (req, res) => {
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    if (!user.isVerified) {
-      return res.status(403).json({ 
-        message: "Please verify your email before logging in",
-        needsVerification: true,
-        email: user.email
-      });
     }
 
     const { password: _, ...userWithoutPassword } = user;
