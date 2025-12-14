@@ -114,20 +114,23 @@ function HeroSection() {
               className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground"
               data-testid="text-hero-title"
             >
-              Premium Automation Templates to{" "}
-              <span className="relative inline-block">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={currentWord}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -20, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="inline-block"
-                  >
-                    {words[currentWord]}
-                  </motion.span>
-                </AnimatePresence>
+              <span className="block md:inline">Automation Templates</span>{" "}
+              <span className="block md:inline">
+                to{" "}
+                <span className="relative inline-block">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={currentWord}
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -20, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="inline-block"
+                    >
+                      {words[currentWord]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
               </span>
             </h1>
           </motion.div>
