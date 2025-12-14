@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Heart, ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingCart, Zap } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +51,22 @@ export function ProductCard({
       originalPrice,
       image,
     });
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!hasItem(id)) {
+      addItem({
+        id: `cart-${id}`,
+        productId: id,
+        name,
+        price,
+        originalPrice,
+        image,
+      });
+    }
+    navigate('/checkout');
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
@@ -146,11 +162,20 @@ export function ProductCard({
                         <Heart className={cn('w-5 h-5', inWishlist && 'fill-current')} />
                       </Button>
                       <Button
+                        variant="outline"
                         onClick={handleAddToCart}
                         data-testid={`button-add-cart-${id}`}
                         disabled={inCart}
                       >
+                        <ShoppingCart className="w-4 h-4 mr-2" />
                         {inCart ? 'In Cart' : 'Add to Cart'}
+                      </Button>
+                      <Button
+                        onClick={handleBuyNow}
+                        data-testid={`button-buy-now-${id}`}
+                      >
+                        <Zap className="w-4 h-4 mr-2" />
+                        Buy Now
                       </Button>
                     </div>
                   </div>
@@ -208,27 +233,9 @@ export function ProductCard({
                 <Heart className={cn('w-4 h-4', inWishlist && 'fill-current')} />
               </motion.button>
 
-              <motion.div
-                className="absolute bottom-0 left-0 right-0 p-3 invisible group-hover:visible"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                style={{ visibility: 'hidden' }}
-              >
-                <div className="group-hover:visible invisible">
-                  <Button
-                    className="w-full"
-                    onClick={handleAddToCart}
-                    data-testid={`button-add-cart-${id}`}
-                    disabled={inCart}
-                  >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    {inCart ? 'In Cart' : 'Add to Cart'}
-                  </Button>
-                </div>
-              </motion.div>
             </div>
 
-            <div className="p-4 space-y-2">
+            <div className="p-4 space-y-3">
               <Badge variant="outline" className="text-xs">
                 {category}
               </Badge>
@@ -244,6 +251,26 @@ export function ProductCard({
                     ₹{Math.round(originalPrice)}/-
                   </span>
                 )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1"
+                  variant="outline"
+                  onClick={handleAddToCart}
+                  data-testid={`button-add-cart-${id}`}
+                  disabled={inCart}
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  {inCart ? 'In Cart' : 'Add to Cart'}
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleBuyNow}
+                  data-testid={`button-buy-now-${id}`}
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Buy Now
+                </Button>
               </div>
             </div>
           </CardContent>
