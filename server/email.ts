@@ -1,21 +1,13 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_SECURE === "true",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendOtpEmail(
   to: string,
   otp: string,
   type: "password_reset" | "email_verification"
 ): Promise<boolean> {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  if (!process.env.RESEND_API_KEY) {
     console.log(`[DEV MODE] OTP for ${to}: ${otp}`);
     return true;
   }
@@ -71,12 +63,18 @@ export async function sendOtpEmail(
   `;
 
   try {
-    await transporter.sendMail({
-      from: `"AutomateHub" <${process.env.SMTP_USER}>`,
-      to,
+    const { error } = await resend.emails.send({
+      from: "AutomateHub <onboarding@resend.dev>",
+      to: [to],
       subject,
       html,
     });
+
+    if (error) {
+      console.error("Failed to send email:", error);
+      return false;
+    }
+
     console.log(`Email sent to ${to}`);
     return true;
   } catch (error) {
