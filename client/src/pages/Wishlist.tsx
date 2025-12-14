@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
 import { 
   ShoppingBag, 
   Download, 
@@ -30,6 +31,7 @@ import { useCartStore } from "@/stores/cartStore";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import type { Product } from "@shared/schema";
 
 const sidebarItems = [
   { title: "Overview", url: "/dashboard", icon: Package },
@@ -82,6 +84,16 @@ function WishlistCard({
   onRemove: () => void;
   onAddToCart: () => void;
 }) {
+  const { data: product } = useQuery<Product>({
+    queryKey: ['/api/products/id', item.productId],
+    enabled: !!item.productId,
+  });
+
+  const displayName = product?.name || item.name;
+  const displayPrice = product?.price ? Number(product.price) : item.price;
+  const displayOriginalPrice = product?.originalPrice ? Number(product.originalPrice) : item.originalPrice;
+  const displayImage = product?.images?.[0] || item.image;
+
   return (
     <motion.div
       variants={staggerItem}
@@ -93,10 +105,10 @@ function WishlistCard({
       >
         <CardContent className="p-0">
           <div className="aspect-video bg-muted relative overflow-hidden rounded-t-xl">
-            {item.image ? (
+            {displayImage ? (
               <img 
-                src={item.image}
-                alt={item.name}
+                src={displayImage}
+                alt={displayName}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -119,18 +131,18 @@ function WishlistCard({
               className="font-semibold mb-1 truncate"
               data-testid={`wishlist-name-${item.productId}`}
             >
-              {item.name}
+              {displayName}
             </h3>
             <div className="flex items-center gap-2 mb-3">
               <span 
                 className="text-lg font-bold"
                 data-testid={`wishlist-price-${item.productId}`}
               >
-                ₹{Math.round(item.price)}/-
+                ₹{Math.round(displayPrice)}/-
               </span>
-              {item.originalPrice && item.originalPrice > item.price && (
+              {displayOriginalPrice && displayOriginalPrice > displayPrice && (
                 <span className="text-sm text-muted-foreground line-through">
-                  ₹{Math.round(item.originalPrice)}/-
+                  ₹{Math.round(displayOriginalPrice)}/-
                 </span>
               )}
             </div>
