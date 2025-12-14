@@ -29,10 +29,10 @@ export async function seedProducts() {
     // Seed products with INR prices
     const productData = [
       {
-        name: "Social Media Scheduler",
-        slug: "social-media-scheduler",
-        description: "Schedule and automate your social media posts across multiple platforms. Save time and maintain consistent presence.",
-        shortDescription: "Automate your social media posting across all platforms.",
+        name: "100+ Social media content workflows",
+        slug: "social-media-content-workflows",
+        description: "Access 100+ pre-built social media content workflows to automate posting across multiple platforms. Save time and maintain consistent presence.",
+        shortDescription: "100+ pre-built workflows for social media automation.",
         price: "199",
         originalPrice: "299",
         categoryId: categoryMap.get("social"),
