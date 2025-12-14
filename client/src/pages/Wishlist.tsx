@@ -126,11 +126,11 @@ function WishlistCard({
                 className="text-lg font-bold"
                 data-testid={`wishlist-price-${item.productId}`}
               >
-                ${item.price}
+                ₹{Math.round(item.price)}/-
               </span>
               {item.originalPrice && item.originalPrice > item.price && (
                 <span className="text-sm text-muted-foreground line-through">
-                  ${item.originalPrice}
+                  ₹{Math.round(item.originalPrice)}/-
                 </span>
               )}
             </div>
