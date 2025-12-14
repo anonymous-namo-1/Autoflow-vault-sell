@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation, Link } from "wouter";
 import { useForm } from "react-hook-form";
@@ -104,10 +104,28 @@ function DashboardSidebar() {
 }
 
 function ProfileContent() {
-  const { user, updateUser } = useAuthStore();
+  const { user, updateUser, isAuthenticated } = useAuthStore();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isProfileSaving, setIsProfileSaving] = useState(false);
   const [isPasswordSaving, setIsPasswordSaving] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLocation("/login?redirect=/dashboard/profile");
+    }
+  }, [isAuthenticated, setLocation]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex-1 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),

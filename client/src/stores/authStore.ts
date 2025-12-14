@@ -8,6 +8,7 @@ interface User {
   avatar?: string | null;
   isVerified?: boolean;
   isAdmin?: boolean;
+  createdAt?: string;
 }
 
 interface AuthState {

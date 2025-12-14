@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -17,9 +18,11 @@ import {
   Clock,
   AlertCircle,
   ExternalLink,
-  Play
+  Play,
+  Loader2
 } from "lucide-react";
 import { SiGoogledrive, SiYoutube } from "react-icons/si";
+import { useAuthStore } from "@/stores/authStore";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -277,9 +280,30 @@ function DownloadsSkeleton() {
 }
 
 function DownloadsContent() {
+  const { isAuthenticated } = useAuthStore();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLocation("/login?redirect=/dashboard/downloads");
+    }
+  }, [isAuthenticated, setLocation]);
+
   const { data: downloads, isLoading, error } = useQuery<DownloadWithProduct[]>({
     queryKey: ['/api/user/downloads'],
+    enabled: isAuthenticated,
   });
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex-1 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   const activeDownloads = downloads?.filter((d) => new Date(d.expiresAt) >= new Date()) || [];
   const expiredDownloads = downloads?.filter((d) => new Date(d.expiresAt) < new Date()) || [];

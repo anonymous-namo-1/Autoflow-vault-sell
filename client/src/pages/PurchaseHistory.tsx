@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Table, 
   TableBody, 
@@ -22,8 +24,10 @@ import {
   FileDown,
   User,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Loader2
 } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -38,6 +42,7 @@ import {
 } from "@/components/ui/sidebar";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import type { Order, OrderItem } from "@shared/schema";
 
 const sidebarItems = [
   { title: "Overview", url: "/dashboard", icon: Package },
@@ -47,20 +52,7 @@ const sidebarItems = [
   { title: "Profile", url: "/dashboard/profile", icon: User },
 ];
 
-interface OrderItem {
-  id: string;
-  name: string;
-  price: string;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  date: string;
-  total: string;
-  status: string;
-  items: OrderItem[];
-}
+type OrderWithItems = Order & { items: OrderItem[] };
 
 function DashboardSidebar() {
   const [location] = useLocation();
@@ -94,7 +86,7 @@ function DashboardSidebar() {
   );
 }
 
-function OrderRow({ order }: { order: Order }) {
+function OrderRow({ order }: { order: OrderWithItems }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const statusColors: Record<string, string> = {
@@ -103,6 +95,15 @@ function OrderRow({ order }: { order: Order }) {
     failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
     refunded: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
   };
+
+  const formattedDate = order.createdAt 
+    ? new Date(order.createdAt).toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    : '';
+  const totalAmount = parseFloat(String(order.total)) || 0;
 
   return (
     <>
@@ -119,10 +120,10 @@ function OrderRow({ order }: { order: Order }) {
             </span>
           </div>
         </TableCell>
-        <TableCell>{order.date}</TableCell>
-        <TableCell>{order.items.length} item(s)</TableCell>
+        <TableCell>{formattedDate}</TableCell>
+        <TableCell>{order.items?.length || 0} item(s)</TableCell>
         <TableCell className="font-medium" data-testid={`order-total-${order.id}`}>
-          {order.total}
+          ₹{Math.round(totalAmount)}/-
         </TableCell>
         <TableCell>
           <Badge className={statusColors[order.status] || ""} data-testid={`order-status-${order.id}`}>
@@ -134,15 +135,18 @@ function OrderRow({ order }: { order: Order }) {
             size="sm" 
             variant="outline" 
             onClick={(e) => e.stopPropagation()}
+            asChild
             data-testid={`button-download-all-${order.id}`}
           >
-            <Download className="h-4 w-4 mr-1" />
-            Download All
+            <Link href="/dashboard/downloads">
+              <Download className="h-4 w-4 mr-1" />
+              Download All
+            </Link>
           </Button>
         </TableCell>
       </TableRow>
       <AnimatePresence>
-        {isExpanded && (
+        {isExpanded && order.items && order.items.length > 0 && (
           <TableRow data-testid={`order-items-${order.id}`}>
             <TableCell colSpan={6} className="bg-muted/30 p-0">
               <motion.div
@@ -159,11 +163,13 @@ function OrderRow({ order }: { order: Order }) {
                       className="flex items-center justify-between p-3 bg-background rounded-md"
                       data-testid={`order-item-${item.id}`}
                     >
-                      <span className="font-medium">{item.name}</span>
+                      <span className="font-medium">{item.product?.name || 'Product'}</span>
                       <div className="flex items-center gap-4">
-                        <span className="text-muted-foreground">{item.price}</span>
-                        <Button size="sm" variant="ghost" data-testid={`button-download-item-${item.id}`}>
-                          <Download className="h-4 w-4" />
+                        <span className="text-muted-foreground">₹{Math.round(item.price)}/-</span>
+                        <Button size="sm" variant="ghost" asChild data-testid={`button-download-item-${item.id}`}>
+                          <Link href="/dashboard/downloads">
+                            <Download className="h-4 w-4" />
+                          </Link>
                         </Button>
                       </div>
                     </div>
@@ -178,7 +184,7 @@ function OrderRow({ order }: { order: Order }) {
   );
 }
 
-function MobileOrderCard({ order }: { order: Order }) {
+function MobileOrderCard({ order }: { order: OrderWithItems }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const statusColors: Record<string, string> = {
@@ -187,6 +193,15 @@ function MobileOrderCard({ order }: { order: Order }) {
     failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
     refunded: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
   };
+
+  const formattedDate = order.createdAt 
+    ? new Date(order.createdAt).toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    : '';
+  const totalAmount = parseFloat(String(order.total)) || 0;
 
   return (
     <Card data-testid={`mobile-order-${order.id}`}>
@@ -199,7 +214,7 @@ function MobileOrderCard({ order }: { order: Order }) {
             <div className="font-medium" data-testid={`mobile-order-number-${order.id}`}>
               {order.orderNumber}
             </div>
-            <div className="text-sm text-muted-foreground">{order.date}</div>
+            <div className="text-sm text-muted-foreground">{formattedDate}</div>
           </div>
           <div className="flex items-center gap-2">
             <Badge className={statusColors[order.status] || ""}>
@@ -210,12 +225,12 @@ function MobileOrderCard({ order }: { order: Order }) {
         </div>
         
         <div className="flex items-center justify-between mt-3 pt-3 border-t">
-          <div className="text-sm text-muted-foreground">{order.items.length} item(s)</div>
-          <div className="font-semibold">{order.total}</div>
+          <div className="text-sm text-muted-foreground">{order.items?.length || 0} item(s)</div>
+          <div className="font-semibold">₹{Math.round(totalAmount)}/-</div>
         </div>
 
         <AnimatePresence>
-          {isExpanded && (
+          {isExpanded && order.items && order.items.length > 0 && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
@@ -228,19 +243,23 @@ function MobileOrderCard({ order }: { order: Order }) {
                     key={item.id}
                     className="flex items-center justify-between p-2 bg-muted/50 rounded-md"
                   >
-                    <span className="text-sm">{item.name}</span>
+                    <span className="text-sm">{item.product?.name || 'Product'}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">{item.price}</span>
-                      <Button size="icon" variant="ghost">
-                        <Download className="h-4 w-4" />
+                      <span className="text-sm text-muted-foreground">₹{Math.round(item.price)}/-</span>
+                      <Button size="icon" variant="ghost" asChild>
+                        <Link href="/dashboard/downloads">
+                          <Download className="h-4 w-4" />
+                        </Link>
                       </Button>
                     </div>
                   </div>
                 ))}
               </div>
-              <Button className="w-full mt-3" variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-1" />
-                Download All
+              <Button className="w-full mt-3" variant="outline" size="sm" asChild>
+                <Link href="/dashboard/downloads">
+                  <Download className="h-4 w-4 mr-1" />
+                  Download All
+                </Link>
               </Button>
             </motion.div>
           )}
@@ -251,64 +270,32 @@ function MobileOrderCard({ order }: { order: Order }) {
 }
 
 function PurchaseHistoryContent() {
+  const { isAuthenticated } = useAuthStore();
+  const [, setLocation] = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 10;
 
-  const orders: Order[] = [
-    { 
-      id: "1", 
-      orderNumber: "ORD-2024-001", 
-      date: "Dec 10, 2024", 
-      total: "₹12,499/-", 
-      status: "paid",
-      items: [
-        { id: "1a", name: "Email Automation Suite", price: "₹6,599/-" },
-        { id: "1b", name: "CRM Integration Pack", price: "₹5,900/-" },
-      ]
-    },
-    { 
-      id: "2", 
-      orderNumber: "ORD-2024-002", 
-      date: "Dec 8, 2024", 
-      total: "₹6,599/-", 
-      status: "paid",
-      items: [
-        { id: "2a", name: "Social Media Scheduler", price: "₹6,599/-" },
-      ]
-    },
-    { 
-      id: "3", 
-      orderNumber: "ORD-2024-003", 
-      date: "Dec 5, 2024", 
-      total: "₹16,599/-", 
-      status: "pending",
-      items: [
-        { id: "3a", name: "Analytics Dashboard Pro", price: "₹8,299/-" },
-        { id: "3b", name: "Invoice Generator", price: "₹4,150/-" },
-        { id: "3c", name: "Task Workflow Bundle", price: "₹4,150/-" },
-      ]
-    },
-    { 
-      id: "4", 
-      orderNumber: "ORD-2024-004", 
-      date: "Nov 28, 2024", 
-      total: "₹7,499/-", 
-      status: "paid",
-      items: [
-        { id: "4a", name: "Lead Generation Template", price: "₹7,499/-" },
-      ]
-    },
-    { 
-      id: "5", 
-      orderNumber: "ORD-2024-005", 
-      date: "Nov 20, 2024", 
-      total: "₹10,799/-", 
-      status: "refunded",
-      items: [
-        { id: "5a", name: "Customer Support Bot", price: "₹10,799/-" },
-      ]
-    },
-  ];
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLocation("/login?redirect=/dashboard/purchases");
+    }
+  }, [isAuthenticated, setLocation]);
+
+  const { data: orders = [], isLoading } = useQuery<OrderWithItems[]>({
+    queryKey: ['/api/user/orders'],
+    enabled: isAuthenticated,
+  });
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex-1 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   const totalPages = Math.ceil(orders.length / ordersPerPage);
   const paginatedOrders = orders.slice(
@@ -333,7 +320,18 @@ function PurchaseHistoryContent() {
           </p>
         </motion.div>
 
-        {orders.length === 0 ? (
+        {isLoading ? (
+          <Card>
+            <div className="p-6 space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <Skeleton className="h-10 w-40" />
+                  <Skeleton className="h-8 w-24" />
+                </div>
+              ))}
+            </div>
+          </Card>
+        ) : orders.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

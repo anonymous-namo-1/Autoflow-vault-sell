@@ -1,8 +1,11 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation, Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   ShoppingBag, 
   Download, 
@@ -12,7 +15,8 @@ import {
   Settings,
   Package,
   FileDown,
-  User
+  User,
+  Loader2
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useWishlistStore } from "@/stores/wishlistStore";
@@ -31,6 +35,7 @@ import {
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import type { Order, OrderItem, Download as DownloadType } from "@shared/schema";
 
 const sidebarItems = [
   { title: "Overview", url: "/dashboard", icon: Package },
@@ -39,6 +44,8 @@ const sidebarItems = [
   { title: "Wishlist", url: "/dashboard/wishlist", icon: Heart },
   { title: "Profile", url: "/dashboard/profile", icon: User },
 ];
+
+type OrderWithItems = Order & { items: OrderItem[] };
 
 function DashboardSidebar() {
   const [location] = useLocation();
@@ -76,12 +83,14 @@ function StatCard({
   title, 
   value, 
   icon: Icon, 
-  index 
+  index,
+  isLoading = false
 }: { 
   title: string; 
   value: string | number; 
   icon: typeof ShoppingBag; 
   index: number;
+  isLoading?: boolean;
 }) {
   return (
     <motion.div
@@ -96,9 +105,13 @@ function StatCard({
           <Icon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold" data-testid={`stat-value-${title.toLowerCase().replace(' ', '-')}`}>
-            {value}
-          </div>
+          {isLoading ? (
+            <Skeleton className="h-8 w-16" />
+          ) : (
+            <div className="text-2xl font-bold" data-testid={`stat-value-${title.toLowerCase().replace(' ', '-')}`}>
+              {value}
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>
@@ -108,7 +121,7 @@ function StatCard({
 function RecentOrderRow({ 
   order 
 }: { 
-  order: { id: string; orderNumber: string; date: string; total: string; status: string; items: number };
+  order: OrderWithItems;
 }) {
   const statusColors: Record<string, string> = {
     paid: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
@@ -116,6 +129,16 @@ function RecentOrderRow({
     failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
     refunded: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
   };
+
+  const formattedDate = order.createdAt 
+    ? new Date(order.createdAt).toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    : '';
+
+  const totalAmount = parseFloat(order.total) || 0;
 
   return (
     <div 
@@ -126,19 +149,23 @@ function RecentOrderRow({
         <span className="font-medium" data-testid={`order-number-${order.id}`}>
           {order.orderNumber}
         </span>
-        <span className="text-sm text-muted-foreground">{order.date}</span>
+        <span className="text-sm text-muted-foreground">{formattedDate}</span>
       </div>
-      <div className="flex items-center gap-4">
-        <span className="text-sm text-muted-foreground">{order.items} item(s)</span>
-        <span className="font-medium" data-testid={`order-total-${order.id}`}>{order.total}</span>
+      <div className="flex items-center gap-4 flex-wrap">
+        <span className="text-sm text-muted-foreground">{order.items?.length || 0} item(s)</span>
+        <span className="font-medium" data-testid={`order-total-${order.id}`}>
+          ₹{Math.round(totalAmount)}/-
+        </span>
         <Badge 
           className={statusColors[order.status] || ""} 
           data-testid={`order-status-${order.id}`}
         >
           {order.status}
         </Badge>
-        <Button size="sm" variant="outline" data-testid={`button-download-${order.id}`}>
-          <Download className="h-4 w-4" />
+        <Button size="sm" variant="outline" asChild data-testid={`button-download-${order.id}`}>
+          <Link href="/dashboard/downloads">
+            <Download className="h-4 w-4" />
+          </Link>
         </Button>
       </div>
     </div>
@@ -146,21 +173,50 @@ function RecentOrderRow({
 }
 
 function DashboardContent() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const [, setLocation] = useLocation();
   const wishlistCount = useWishlistStore((state) => state.itemCount());
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLocation("/login?redirect=/dashboard");
+    }
+  }, [isAuthenticated, setLocation]);
+
+  const { data: orders = [], isLoading: ordersLoading } = useQuery<OrderWithItems[]>({
+    queryKey: ['/api/user/orders'],
+    enabled: isAuthenticated,
+  });
+
+  const { data: downloads = [], isLoading: downloadsLoading } = useQuery<DownloadType[]>({
+    queryKey: ['/api/user/downloads'],
+    enabled: isAuthenticated,
+  });
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex-1 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isLoading = ordersLoading || downloadsLoading;
+  const totalPurchases = orders.length;
+  const totalDownloads = downloads.reduce((acc, d) => acc + (d.downloadCount || 0), 0);
+  const activeDownloads = downloads.filter(d => new Date(d.expiresAt) > new Date()).length;
+
   const stats = [
-    { title: "Total Purchases", value: 12, icon: ShoppingBag },
-    { title: "Templates Downloaded", value: 28, icon: Download },
+    { title: "Total Purchases", value: totalPurchases, icon: ShoppingBag },
+    { title: "Templates Downloaded", value: totalDownloads, icon: Download },
     { title: "Wishlist Items", value: wishlistCount, icon: Heart },
-    { title: "Active Downloads", value: 3, icon: Clock },
+    { title: "Active Downloads", value: activeDownloads, icon: Clock },
   ];
 
-  const recentOrders = [
-    { id: "1", orderNumber: "ORD-2024-001", date: "Dec 10, 2024", total: "₹12,499/-", status: "paid", items: 2 },
-    { id: "2", orderNumber: "ORD-2024-002", date: "Dec 8, 2024", total: "₹6,599/-", status: "paid", items: 1 },
-    { id: "3", orderNumber: "ORD-2024-003", date: "Dec 5, 2024", total: "₹16,599/-", status: "pending", items: 3 },
-  ];
+  const recentOrders = orders.slice(0, 3);
 
   return (
     <div className="flex-1 p-6 overflow-auto">
@@ -186,7 +242,7 @@ function DashboardContent() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
         >
           {stats.map((stat, index) => (
-            <StatCard key={stat.title} {...stat} index={index} />
+            <StatCard key={stat.title} {...stat} index={index} isLoading={isLoading} />
           ))}
         </motion.div>
 
@@ -208,7 +264,16 @@ function DashboardContent() {
                 </Button>
               </CardHeader>
               <CardContent className="p-0">
-                {recentOrders.length > 0 ? (
+                {ordersLoading ? (
+                  <div className="p-4 space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <Skeleton className="h-10 w-32" />
+                        <Skeleton className="h-8 w-24" />
+                      </div>
+                    ))}
+                  </div>
+                ) : recentOrders.length > 0 ? (
                   <div data-testid="recent-orders-list">
                     {recentOrders.map((order) => (
                       <RecentOrderRow key={order.id} order={order} />
