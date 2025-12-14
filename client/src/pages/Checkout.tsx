@@ -84,11 +84,12 @@ export default function Checkout() {
   const initiateRazorpayPayment = (orderData: {
     orderId: string;
     razorpayOrderId: string;
+    razorpayKeyId: string;
     amount: number;
     currency: string;
   }) => {
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      key: orderData.razorpayKeyId,
       amount: orderData.amount,
       currency: orderData.currency,
       name: 'AutomateHub',
