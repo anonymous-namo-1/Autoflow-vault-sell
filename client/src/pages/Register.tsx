@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
+import { useAuthStore } from "@/stores/authStore";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -36,6 +37,7 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const login = useAuthStore((state) => state.login);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -51,16 +53,18 @@ export default function Register() {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
-      await apiRequest("POST", "/api/auth/register", {
+      const response = await apiRequest("POST", "/api/auth/register", {
         name: data.name,
         email: data.email,
         password: data.password,
       });
+      const result = await response.json();
+      login(result.user);
       toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account.",
+        title: "Welcome!",
+        description: "Your account has been created successfully.",
       });
-      setLocation(`/verify-email?email=${encodeURIComponent(data.email)}`);
+      setLocation("/");
     } catch (error) {
       toast({
         title: "Registration failed",
